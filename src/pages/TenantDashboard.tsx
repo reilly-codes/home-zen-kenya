@@ -1,4 +1,4 @@
-import { Wallet, FileText, ClipboardList, Calendar } from 'lucide-react';
+import { Wallet, FileText, ClipboardList, Calendar, Sun, Moon, CloudSun, Sparkles } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { Button } from '@/components/ui/button';
@@ -6,10 +6,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { tenants, recentPayments, formatKES } from '@/lib/mock-data';
 import { toast } from 'sonner';
 
+// Dynamic greeting based on time
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return { text: 'Good morning', icon: Sun };
+  if (hour < 17) return { text: 'Good afternoon', icon: CloudSun };
+  return { text: 'Good evening', icon: Moon };
+}
+
 export default function TenantDashboard() {
   // Get current tenant data (James Mwangi - tenant-1)
   const currentTenant = tenants.find(t => t.id === 'tenant-1')!;
   const tenantPayments = recentPayments.filter(p => p.tenantId === 'tenant-1');
+  const greeting = getGreeting();
+  const GreetingIcon = greeting.icon;
 
   const handlePayNow = () => {
     toast.info('Redirecting to M-Pesa payment gateway...', {
@@ -19,7 +29,12 @@ export default function TenantDashboard() {
 
   return (
     <DashboardLayout
-      title="Welcome Home"
+      title={
+        <span className="flex items-center gap-2">
+          <GreetingIcon className="h-7 w-7 text-primary" />
+          Welcome home, James! 👋
+        </span>
+      }
       description={`Unit ${currentTenant.unitNumber} • ${currentTenant.propertyName}`}
     >
       {/* Current Balance Card */}
@@ -97,7 +112,14 @@ export default function TenantDashboard() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">No recent payments</p>
+                  <div className="empty-state py-8">
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 bg-primary/5 rounded-full scale-150 blur-xl" />
+                      <Sparkles className="h-10 w-10 text-muted-foreground/40 relative" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">No payments yet</h3>
+                    <p className="text-xs text-muted-foreground/70">Your payment history will appear here</p>
+                  </div>
                 )}
               </div>
             </div>
