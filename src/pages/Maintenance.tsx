@@ -120,9 +120,13 @@ export default function Maintenance() {
             </div>
           ))}
           {requests.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <Wrench className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No requests</p>
+            <div className="empty-state py-12">
+              <div className="relative mb-4">
+                <div className="absolute inset-0 bg-primary/5 rounded-full scale-150 blur-xl" />
+                <Wrench className="h-12 w-12 text-muted-foreground/40 relative" />
+              </div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-1">All clear! ✨</h3>
+              <p className="text-xs text-muted-foreground/70">No requests in this category</p>
             </div>
           )}
         </div>

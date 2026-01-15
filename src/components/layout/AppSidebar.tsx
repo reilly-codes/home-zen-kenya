@@ -44,9 +44,9 @@ const landlordNavItems = [
 
 const tenantNavItems = [
   { title: 'My Home', url: '/', icon: Home },
-  { title: 'My Documents', url: '/documents', icon: FileText },
-  { title: 'Requests', url: '/requests', icon: ClipboardList },
-  { title: 'Payments', url: '/payments', icon: CreditCard },
+  { title: 'My Invoices', url: '/invoices', icon: FileText },
+  { title: 'Requests', url: '/maintenance', icon: ClipboardList },
+  { title: 'Payments', url: '/financials', icon: CreditCard },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
 

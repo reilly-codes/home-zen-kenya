@@ -17,10 +17,10 @@ export function StatsCard({ title, value, subtitle, icon: Icon, trend, variant =
   return (
     <div
       className={cn(
-        "rounded-xl p-6 transition-all duration-200",
+        "rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02]",
         variant === 'primary'
-          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-          : "bg-card border border-border shadow-sm hover:shadow-md"
+          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl"
+          : "bg-card border border-border shadow-sm hover:shadow-lg"
       )}
     >
       <div className="flex items-start justify-between">
@@ -69,7 +69,7 @@ export function StatsCard({ title, value, subtitle, icon: Icon, trend, variant =
           )}
         </div>
         <div className={cn(
-          "flex h-12 w-12 items-center justify-center rounded-xl",
+          "flex h-12 w-12 items-center justify-center rounded-2xl",
           variant === 'primary'
             ? "bg-primary-foreground/20"
             : "bg-primary/10"

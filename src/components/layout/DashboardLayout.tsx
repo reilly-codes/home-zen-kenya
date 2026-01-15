@@ -6,7 +6,7 @@ import { useUser } from '@/contexts/UserContext';
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  title?: string;
+  title?: ReactNode;
   description?: string;
 }
 
