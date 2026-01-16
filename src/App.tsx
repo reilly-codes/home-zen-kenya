@@ -12,6 +12,7 @@ import Maintenance from "./pages/Maintenance";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import TenantInvoices from "./pages/TenantInvoices";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/login" element={<Login />} />
             <Route path="/" element={<Index />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/tenants" element={<Tenants />} />
