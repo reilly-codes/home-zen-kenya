@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Loader2, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,16 +7,24 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import loginHero from "@/assets/login-hero.jpg";
 
+import { useUser } from "@/contexts/UserContext"; 
+
+import { login as loginService } from "@/services/auth";
+
 interface LoginPageProps {
   onLogin?: (email: string, password: string) => Promise<void>;
 }
 
-const Login: React.FC<LoginPageProps> = ({ onLogin }) => {
+const Login = () => {
+  // 3. CHANGE: Get the login helper from your Context
+  const { login } = useUser();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,18 +38,27 @@ const Login: React.FC<LoginPageProps> = ({ onLogin }) => {
     setIsLoading(true);
     
     try {
-      if (onLogin) {
-        await onLogin(email, password);
-      } else {
-        // Mock login for demonstration
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        // Simulate error for demo
-        if (email !== "demo@homezen.co.ke") {
-          throw new Error("Invalid credentials. Try demo@homezen.co.ke");
-        }
+      // 4. CHANGE: Call the API service (renamed import)r === 1
+      const userRespone = await loginService(email, password);
+      // console.log("Login successful: ", userRespone);
+
+      const user = {
+        role: Number(userRespone.role_id),
+        id: userRespone.sub,
+        token_exp: userRespone.exp.toString()
       }
+
+      login(user);
+
+      // console.log(user);
+
+      if(user.role === 1) {
+        navigate("/");
+      } 
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed. Please try again.");
+      const errorMesssage = err.response?.data?.detail || "Login Failed. Please check your credentials";
+      setError(errorMesssage)
     } finally {
       setIsLoading(false);
     }
@@ -215,17 +232,6 @@ const Login: React.FC<LoginPageProps> = ({ onLogin }) => {
                 "Sign In"
               )}
             </Button>
-
-            {/* Sign Up Link */}
-            <p className="text-center text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                to="/signup"
-                className="text-primary font-semibold hover:underline transition-colors"
-              >
-                Sign up
-              </Link>
-            </p>
           </form>
 
           {/* Divider */}

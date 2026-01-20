@@ -51,12 +51,12 @@ const tenantNavItems = [
 ];
 
 export function AppSidebar() {
-  const { role, setRole } = useUser();
+  const { user, logout } = useUser();
   const location = useLocation();
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
 
-  const navItems = role === 'landlord' ? landlordNavItems : tenantNavItems;
+  const navItems = user.role === 1 ? landlordNavItems : tenantNavItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -77,7 +77,7 @@ export function AppSidebar() {
       <SidebarContent className="px-2 py-4">
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-2">
-            {role === 'landlord' ? 'Management' : 'Tenant Portal'}
+            {user.role === 1 ? 'Management' : 'Tenant Portal'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -112,43 +112,22 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-4">
         {!isCollapsed && (
           <div className="space-y-4">
-            {/* Role Toggle */}
-            <div className="flex items-center justify-between rounded-lg bg-sidebar-accent/50 p-3">
-              <Label htmlFor="role-toggle" className="text-xs text-sidebar-foreground/70">
-                View as:
-              </Label>
-              <div className="flex items-center gap-2">
-                <span className={cn("text-xs", role === 'landlord' ? 'text-sidebar-primary font-medium' : 'text-sidebar-foreground/50')}>
-                  Landlord
-                </span>
-                <Switch
-                  id="role-toggle"
-                  checked={role === 'tenant'}
-                  onCheckedChange={(checked) => setRole(checked ? 'tenant' : 'landlord')}
-                  className="data-[state=checked]:bg-sidebar-primary"
-                />
-                <span className={cn("text-xs", role === 'tenant' ? 'text-sidebar-primary font-medium' : 'text-sidebar-foreground/50')}>
-                  Tenant
-                </span>
-              </div>
-            </div>
-
             {/* User Info */}
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-full bg-sidebar-accent flex items-center justify-center">
                 <span className="text-sm font-medium text-sidebar-foreground">
-                  {role === 'landlord' ? 'JK' : 'JM'}
+                  {user.role === 1 ? 'JK' : 'JM'}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">
-                  {role === 'landlord' ? 'Joseph Kariuki' : 'James Mwangi'}
+                  {user.role === 1 ? 'Joseph Kariuki' : 'James Mwangi'}
                 </p>
                 <p className="text-xs text-sidebar-foreground/50 truncate">
-                  {role === 'landlord' ? 'Property Owner' : 'Tenant - A101'}
+                  {user.role === 1 ? 'Property Owner' : 'Tenant - A101'}
                 </p>
               </div>
-              <Button variant="ghost" size="icon" className="text-sidebar-foreground/50 hover:text-sidebar-foreground">
+              <Button variant="ghost" size="icon" onClick={logout} className="text-sidebar-foreground/50 hover:text-sidebar-foreground">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
