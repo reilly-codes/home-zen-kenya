@@ -18,25 +18,35 @@ const statusStyles = {
   maintenance: 'bg-destructive/10 text-destructive border-destructive/20',
 };
 
-const statusLabels = {
-  occupied: 'Occupied',
-  vacant: 'Vacant',
-  maintenance: 'Maintenance',
-};
 
 interface House {
+  id?: string,
   number: string,
   rent: number,
   deposit: number,
   description: string
 }
 
+interface HouseView {
+  id: string,
+  number: string,
+  rent: number,
+  deposit: number,
+  description: string,
+  status: string,
+  created_at: Date,
+  property_id: string
+
+}
+
 export default function Properties() {
   const [properties, setProperties] = useState([]);
   const [propertyUnits, setUnits] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [addPropertyOpen, setAddPropertyOpen] = useState(false);
   const [addUnitOpen, setAddUnitOpen] = useState(false);
+  const [viewUnitOpen, setViewUnitOpen] = useState(false);
   const [name, setPropertyName] = useState("");
   const [location, setPropeertyLocation] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +117,29 @@ export default function Properties() {
     }
   };
 
-  const handleAddUnit = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setSelectedUnit(null);
+    setHouse({
+      number: "",
+      rent: 0,
+      deposit: 0,
+      description: ""
+    });
+    setAddUnitOpen(true);
+  }
+
+  const OpenEditModal = (unit: any) => {
+    setSelectedUnit(unit.id);
+    setHouse({
+      number: unit.number,
+      rent: unit.rent,
+      deposit: unit.deposit,
+      description: unit.description
+    });
+    setAddUnitOpen(true);
+  }
+
+  const handleSaveUnit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -117,23 +149,31 @@ export default function Properties() {
     }
 
     try {
-      const response  = await api.post(`/properties/${selectedProperty}/houses/create`, hse);
-      toast.success("Unit created successfully");
-      setUnits((prevUnits) => [...prevUnits, response.data]);
-      setHouse({
-        number: "",
-        rent: 0,
-        deposit: 0,
-        description: ""
-      });
+      if (selectedUnit) {
+        const response = await api.patch(`/properties/${selectedProperty}/houses/${selectedUnit}`, hse);
+        toast.success("Unit updated successfully");
+        setUnits((prev) => prev.map(u => u.id === selectedUnit ? response.data : u));
+      } else {
+        const response = await api.post(`/properties/${selectedProperty}/houses/create`, hse);
+        toast.success("Unit created successfully");
+        setUnits((prevUnits) => [...prevUnits, response.data]);
+        setHouse({
+          number: "",
+          rent: 0,
+          deposit: 0,
+          description: ""
+        });
+      }
       setAddUnitOpen(false);
     } catch (err) {
-      const errorMsg = err.response?.data?.detaeil;
+      const errorMsg = err.response?.data?.detail || "Failed to save Unit";
       setError(errorMsg);
     }
 
 
   };
+
+  const openUnit = propertyUnits.find(u => u.id === selectedUnit);
 
   return (
     <DashboardLayout
@@ -184,7 +224,7 @@ export default function Properties() {
                 <Users className="h-4 w-4" />
                 <span>{property.houses || 0}/{property.houses || 0} units</span>
               </div> */}
-              {/* <div className="text-right">
+            {/* <div className="text-right">
                 <p className="text-sm font-medium text-primary">{formatKES(property.monthlyRevenue)}</p>
                 <p className="text-xs text-muted-foreground">monthly</p>
               </div> */}
@@ -203,70 +243,73 @@ export default function Properties() {
                 {propertyUnits.length} Total Units
               </Badge>
             </h2>
-            <Button variant="outline" size="sm" onClick={() => setAddUnitOpen(true)}>
+            <Button variant="outline" size="sm" onClick={openCreateModal}>
               <Plus className="mr-2 h-4 w-4" />
               Add Unit
             </Button>
           </div>
 
           <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Unit</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Deposit</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Rent</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
-                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {propertyUnits.map((unit) => (
-                <tr key={unit.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="p-4 font-medium">{unit.number}</td>
-                  <td className="p-4 text-muted-foreground">{unit.description}</td>
-                  <td className="p-4">{formatKES(unit.deposit)}</td>
-                  <td className="p-4">{formatKES(unit.rent)}</td>
-                  <td className="p-4">
-                    <Badge variant="outline" className={statusStyles[unit.status.toLowerCase()]}>
-                      {/* {statusLabels[unit.status]} */}
-                      {unit.status}
-                    </Badge>
-                  </td>
-                  <td className="p-4 text-right">
-                    <Button variant="ghost" size="sm">View</Button>
-                  </td>
+            <table className="w-full">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Unit</th>
+                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
+                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Deposit</th>
+                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Rent</th>
+                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
+                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {propertyUnits.map((unit) => (
+                  <tr key={unit.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="p-4 font-medium">{unit.number}</td>
+                    <td className="p-4 text-muted-foreground">{unit.description}</td>
+                    <td className="p-4">{formatKES(unit.deposit)}</td>
+                    <td className="p-4">{formatKES(unit.rent)}</td>
+                    <td className="p-4">
+                      <Badge variant="outline" className={statusStyles[unit.status.toLowerCase()]}>
+                        {/* {statusLabels[unit.status]} */}
+                        {unit.status}
+                      </Badge>
+                    </td>
+                    <td className="p-4 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setSelectedUnit(unit.id);
+                        setViewUnitOpen(true);
+                      }}>View</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Mobile Card View */}
-      <div className="md:hidden space-y-3">
-        {propertyUnits.map((unit) => (
-          <div key={unit.id} className="mobile-card">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-semibold text-lg">{unit.unitNumber}</span>
-              <Badge variant="outline" className={statusStyles[unit.status.toLowerCase()]}>
-                {unit.status}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{unit.type}</span>
-              <span className="font-medium">{formatKES(unit.rent)}/mo</span>
-            </div>
+          <div className="md:hidden space-y-3">
+            {propertyUnits.map((unit) => (
+              <div key={unit.id} className="mobile-card">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-semibold text-lg">{unit.unitNumber}</span>
+                  <Badge variant="outline" className={statusStyles[unit.status.toLowerCase()]}>
+                    {unit.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{unit.type}</span>
+                  <span className="font-medium">{formatKES(unit.rent)}/mo</span>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+        </div>
+      )
+      }
 
 
 
-{/* Add Property Modal */ }
+      {/* Add Property Modal */}
       <Dialog open={addPropertyOpen} onOpenChange={setAddPropertyOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -299,6 +342,7 @@ export default function Properties() {
         </DialogContent>
       </Dialog>
 
+      {/* Add Unit Model */}
       <Dialog open={addUnitOpen} onOpenChange={setAddUnitOpen}>
         <DialogContent className="sm:max-w-w[500px">
           <DialogHeader>
@@ -307,35 +351,91 @@ export default function Properties() {
               Enter Unit details to add mew unit to Property
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleAddUnit} className="space-y-4 mt-4">
+          <form onSubmit={handleSaveUnit} className="space-y-4 mt-4">
             {error && (
               <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm animate-in slide-in-from-top-2 duration-300">
                 {error}
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="property-name">Unit Number</Label>
-              <Input id="property-name" value={hse.number} onChange={(e) => setHouse({ ...hse, number: e.target.value })} placeholder="e.g. A101" required />
+              <Label htmlFor="unit-number">Unit Number</Label>
+              <Input id="unit-number" value={hse.number} onChange={(e) => setHouse({ ...hse, number: e.target.value })} placeholder="e.g. A101" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="property-name">Unit Deposit</Label>
-              <Input id="property-name" type='number' value={hse.deposit} onChange={(e) => setHouse({ ...hse, deposit: Number(e.target.value) })} placeholder="e.g. 6500" required />
+              <Label htmlFor="unit-deposit">Unit Deposit</Label>
+              <Input id="unit-deposit" type='number' value={hse.deposit} onChange={(e) => setHouse({ ...hse, deposit: Number(e.target.value) })} placeholder="e.g. 6500" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="property-name">Unit Rent</Label>
-              <Input id="property-name" type='number' value={hse.rent} onChange={(e) => setHouse({ ...hse, rent: Number(e.target.value) })} placeholder="e.g. 12000" required />
+              <Label htmlFor="unit-rent">Unit Rent</Label>
+              <Input id="unit-rent" type='number' value={hse.rent} onChange={(e) => setHouse({ ...hse, rent: Number(e.target.value) })} placeholder="e.g. 12000" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="property-name">Unit Description</Label>
-              <Input id="property-name" value={hse.description} onChange={(e) => setHouse({ ...hse, description: e.target.value })} placeholder="e.g. 2 Bedroom Apartment" required />
+              <Label htmlFor="unit-description">Unit Description</Label>
+              <Input id="unit-description" value={hse.description} onChange={(e) => setHouse({ ...hse, description: e.target.value })} placeholder="e.g. 2 Bedroom Apartment" required />
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <Button type="button" variant="outline" onClick={() => setAddUnitOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit">Add Unit</Button>
+              <Button type="submit">{selectedUnit ? "Save Changes" : "Add Unit"}</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* view Unit */}
+      <Dialog open={viewUnitOpen} onOpenChange={setViewUnitOpen}>
+        <DialogContent className="sm:max-w-w[500px">
+          <DialogHeader>
+            <DialogTitle>
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-primary" />
+              </div>
+              {properties.find(p => p.id === selectedProperty)?.name}
+              </DialogTitle>
+            <hr />
+            <DialogDescription>
+              View Unit {propertyUnits.find(p => p.id === selectedUnit)?.number} details
+            </DialogDescription>
+          </DialogHeader>
+          {openUnit ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Unit Number</label>
+                  <p className="font-medium">{openUnit.number}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Status</label>
+                  <br />
+                  <Badge variant="outline" className={statusStyles[openUnit.status.toLowerCase() as keyof typeof statusStyles]}>
+                    {openUnit.status}
+                  </Badge>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Rent</label>
+                  <p>{formatKES(openUnit.rent)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Deposit</label>
+                  <p>{formatKES(openUnit.deposit)}</p>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Description</label>
+                <p className="text-sm text-gray-600">{openUnit.description}</p>
+              </div>
+              <hr />
+              <div className="flex justify-end gap-3 mt-6">
+                <Button type="button" variant="outline" onClick={() => setViewUnitOpen(false)}>
+                  Close
+                </Button>
+                <Button type="submit" onClick={() => OpenEditModal(openUnit)}>Edit Unit</Button>
+              </div>
+            </div>
+          ) : (
+            <div>Loading details...</div>
+          )}
         </DialogContent>
       </Dialog>
     </DashboardLayout >

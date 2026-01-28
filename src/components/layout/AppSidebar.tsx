@@ -116,15 +116,12 @@ export function AppSidebar() {
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-full bg-sidebar-accent flex items-center justify-center">
                 <span className="text-sm font-medium text-sidebar-foreground">
-                  {user.role === 1 ? 'JK' : 'JM'}
+                  {user.role === 1 ? 'LL' : 'TN'}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">
-                  {user.role === 1 ? 'Joseph Kariuki' : 'James Mwangi'}
-                </p>
-                <p className="text-xs text-sidebar-foreground/50 truncate">
-                  {user.role === 1 ? 'Property Owner' : 'Tenant - A101'}
+                  {user.role === 1 ? 'Landlord' : 'Tenant'}
                 </p>
               </div>
               <Button variant="ghost" size="icon" onClick={logout} className="text-sidebar-foreground/50 hover:text-sidebar-foreground">

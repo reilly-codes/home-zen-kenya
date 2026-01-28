@@ -52,7 +52,7 @@ const Login = () => {
 
       // console.log(user);
 
-      if(user.role === 1) {
+      if(user.role) {
         navigate("/");
       } 
       
