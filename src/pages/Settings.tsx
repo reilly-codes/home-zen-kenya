@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,11 +8,35 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { User, Bell, Shield, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { api } from '@/services/api';
 
 export default function Settings() {
-  const handleSave = () => {
-    toast.success('Settings saved successfully!');
-  };
+  // Add edit profile function
+
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const getUser = async () => {
+      setIsLoading(true);
+
+      try {
+        const response = await api.get("/users/current");
+        setUser(response.data);
+
+      } catch (err) {
+        console.error("Failed to fetch Properties: ", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getUser();
+  },[]);
+
+  if(isLoading) {
+    return <p>Loading...</p>
+  }
 
   return (
     <DashboardLayout
@@ -35,27 +60,33 @@ export default function Settings() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" defaultValue="Joseph" />
+                <Label htmlFor="firstName">Full Name</Label>
+                <Input id="firstName" defaultValue={user?.name} />
               </div>
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input id="lastName" defaultValue="Kariuki" />
-              </div>
+              </div> */}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue="joseph.kariuki@email.com" />
+              <Input id="email" type="email" defaultValue={user?.email} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" defaultValue="+254 700 123 456" />
+              <Input id="phone" defaultValue={user?.tel} />
             </div>
           </CardContent>
         </Card>
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <Button size="lg" disabled className="opacity-50 cursor-not-allowed">
+            Save Changes
+          </Button>
+        </div>
 
         {/* Notification Settings */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -100,10 +131,10 @@ export default function Settings() {
               <Switch />
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Business Settings */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -129,7 +160,7 @@ export default function Settings() {
               <Input id="address" defaultValue="Westlands, Nairobi" />
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Security Settings */}
         <Card>
@@ -148,22 +179,17 @@ export default function Settings() {
             <Button variant="outline" className="w-full sm:w-auto">
               Change Password
             </Button>
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Two-Factor Authentication</p>
                 <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
               </div>
               <Switch />
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button size="lg" onClick={handleSave}>
-            Save Changes
-          </Button>
-        </div>
+        
       </div>
     </DashboardLayout>
   );

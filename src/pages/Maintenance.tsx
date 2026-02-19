@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Wrench, Plus, AlertTriangle, Clock, CheckCircle2, User, MapPin } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -20,15 +20,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { maintenanceRequests, MaintenanceRequest } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { api } from '@/services/api';
+import { format } from 'date-fns';
+import { units } from '@/lib/mock-data';
 
-const priorityStyles = {
-  low: 'bg-muted text-muted-foreground border-border',
-  medium: 'bg-primary/10 text-primary border-primary/20',
-  high: 'bg-warning/10 text-warning border-warning/20',
-  urgent: 'bg-destructive/10 text-destructive border-destructive/20',
+
+const repairStatuses = {
+  "PENDING": "PENDING",
+  "IN PROGRESS": "IN PROGRESS",
+  "COMPLETED": "COMPLETED"
 };
 
 const statusIcons = {
@@ -43,27 +45,143 @@ const statusLabels = {
   completed: 'Completed',
 };
 
+interface MaintenanceRequest {
+  id: string,
+  title: string,
+  description: string,
+  date_raised: Date,
+  status: string,
+  tenant: {
+    name: string,
+  },
+  house: {
+    number: string
+  }
+}
+
 export default function Maintenance() {
-  const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
-  const [assignOpen, setAssignOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [maintenanceIssues, setMaintenanceIssues] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [editRepair, setEditRepair] = useState({
+    status: ""
+  });
+  const [newRepair, setNewRepair] = useState({
+    hse_id: "",
+    title: "",
+    description: ""
+  });
+  const [allProperties, setAllProperties] = useState([]);
+  const [allUnits, setAllUnits] = useState([]);
+  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
+  const [addRepairOpen, setAddRepairOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchMaintenance = async () => {
+      setIsLoading(true)
+      try {
+        const response = await api.get("/maintenance/all");
+        setMaintenanceIssues(response.data);
+        console.log(maintenanceIssues);
+      } catch (err) {
+        console.error("Could not fetch maintenance issues: ", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMaintenance();
+  }, []);
 
   const groupedRequests = {
-    new: maintenanceRequests.filter(r => r.status === 'new'),
-    'in-progress': maintenanceRequests.filter(r => r.status === 'in-progress'),
-    completed: maintenanceRequests.filter(r => r.status === 'completed'),
+    new: maintenanceIssues.filter(r => r.status.toLowerCase() === 'pending'),
+    'in-progress': maintenanceIssues.filter(r => r.status.toLowerCase() === 'in progress'),
+    completed: maintenanceIssues.filter(r => r.status.toLowerCase() === 'completed'),
   };
 
-  const handleNotifyLandlord = (request: MaintenanceRequest) => {
-    toast.success('Notification sent!', {
-      description: `Landlord has been notified about the ${request.priority} priority issue in ${request.unitNumber}.`,
-    });
-  };
+  useEffect(() => {
+    const fetchProperties = async () => {
+      if (addRepairOpen) {
+        setIsLoading(true);
+        try {
+          const res = await api.get("/properties/all");
+          setAllProperties(res.data);
+        } catch (err) {
+          const errMsg = err.response?.data?.detail || "Failed to fetch properties";
+          setError(errMsg);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
 
-  const handleAssign = (e: React.FormEvent) => {
+    fetchProperties();
+  }, [addRepairOpen]);
+
+  useEffect(() => {
+    const fetchUnits = async () => {
+      if (!selectedProperty) return;
+
+      setIsLoading(true);
+      try {
+        const response = await api.get(`/properties/${selectedProperty}/houses/all`)
+        setAllUnits(response.data);
+      } catch (err) {
+        const errMsg = err.response?.data?.detail || "Failed to fetch property Units";
+        setError(errMsg);
+      }
+      finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUnits();
+  }, [selectedProperty]);
+
+  const handleAddRepair = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Contractor assigned successfully!');
-    setAssignOpen(false);
-    setSelectedRequest(null);
+    setError(null);
+
+    try {
+      const response = await api.post("/maintenance/generate", newRepair);
+      toast.success("Raised Maintenance Request successfully")
+      setMaintenanceIssues((prevRequests) => [...prevRequests, response.data])
+      setNewRepair({
+        hse_id: "",
+        title: "",
+        description: ""
+      });
+      setSelectedProperty(null);
+    } catch (err) {
+      const errMsg = err.response?.data?.detail || "Failed to raise maintenance Request";
+      setError(errMsg);
+      toast.error("Request Failed")
+    }
+  };
+
+  const handleEditStatus = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      const response = await api.patch(`/maintenance/edit-status/${selectedRequest.id}`, editRepair)
+      toast.success('Status changed successfully!');
+      setMaintenanceIssues((prevRepairs) => prevRepairs.map((repair) =>
+        repair.id === response.data.id ? response.data : repair
+      ));
+      setEditRepair({
+        status: ""
+      });
+      setEditOpen(false);
+      setSelectedRequest(null);
+    } catch (err) {
+      const errMsg = err.response?.data?.detail || "Failed to change Request status";
+      setError(errMsg);
+    }
+
+
   };
 
   const KanbanColumn = ({ status, requests }: { status: keyof typeof groupedRequests; requests: MaintenanceRequest[] }) => {
@@ -75,6 +193,7 @@ export default function Maintenance() {
     };
 
     return (
+
       <div className={cn(
         "bg-muted/30 rounded-xl p-4 border-t-4",
         columnStyles[status]
@@ -97,26 +216,17 @@ export default function Maintenance() {
               onClick={() => setSelectedRequest(request)}
             >
               <div className="flex items-start justify-between mb-2">
-                <Badge variant="outline" className={priorityStyles[request.priority]}>
-                  {request.priority}
-                </Badge>
-                <span className="text-xs text-muted-foreground">{request.createdAt}</span>
+                <h3 className='text-lg font-bold mb-2'>{request.title}</h3>
+                <span className="text-xs text-muted-foreground">{format(new Date(request.date_raised), "MMM dd, yyyy")}</span>
               </div>
               <p className="text-sm font-medium mb-2 line-clamp-2">{request.description}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <User className="h-3 w-3" />
-                <span>{request.tenantName}</span>
+                <span>{request.tenant?.name || "VACANT"}</span>
                 <span>•</span>
                 <MapPin className="h-3 w-3" />
-                <span>{request.unitNumber}</span>
+                <span>{request.house.number}</span>
               </div>
-              {request.assignedTo && (
-                <div className="mt-2 pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground">
-                    Assigned to: <span className="font-medium text-foreground">{request.assignedTo}</span>
-                  </p>
-                </div>
-              )}
             </div>
           ))}
           {requests.length === 0 && (
@@ -164,8 +274,24 @@ export default function Maintenance() {
         </div>
       </div>
 
+      <div className='flex justify-end mb-3'>
+        <div className="max-w-sm">
+          <Button
+            className="flex-1"
+            onClick={() => {
+              setAddRepairOpen(true);
+            }}
+          >
+            Raise Maintenance Request
+          </Button>
+        </div>
+      </div>
+
+      <hr />
+
+
       {/* Kanban Board - Desktop */}
-      <div className="hidden lg:grid grid-cols-3 gap-6">
+      <div className="hidden lg:grid grid-cols-3 gap-6 mt-3">
         <KanbanColumn status="new" requests={groupedRequests.new} />
         <KanbanColumn status="in-progress" requests={groupedRequests['in-progress']} />
         <KanbanColumn status="completed" requests={groupedRequests.completed} />
@@ -191,16 +317,15 @@ export default function Maintenance() {
                   onClick={() => setSelectedRequest(request)}
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <Badge variant="outline" className={priorityStyles[request.priority]}>
-                      {request.priority}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{request.createdAt}</span>
+
+                    <span className="text-xs text-muted-foreground">{format(new Date(request.date_raised), "MMM dd, yyyy")}</span>
                   </div>
-                  <p className="text-sm font-medium mb-2">{request.description}</p>
+                  <h3 className='text-lg font-bold mb-2'>{request.title}</h3>
+                  <p className="text-sm font-normal mb-2">{request.description}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{request.tenantName}</span>
+                    <span>{request.tenant?.name || "VACANT"}</span>
                     <span>•</span>
-                    <span>{request.unitNumber}</span>
+                    <span>{request.house.number}</span>
                   </div>
                 </div>
               ))}
@@ -216,9 +341,7 @@ export default function Maintenance() {
             <>
               <DialogHeader>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className={priorityStyles[selectedRequest.priority]}>
-                    {selectedRequest.priority} priority
-                  </Badge>
+                  <h3 className='text-lg font-bold mb-2'>{selectedRequest.title}</h3>
                 </div>
                 <DialogTitle className="text-lg mt-2">Maintenance Request</DialogTitle>
               </DialogHeader>
@@ -231,18 +354,18 @@ export default function Maintenance() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-xs text-muted-foreground mb-1">Tenant</p>
-                    <p className="font-medium">{selectedRequest.tenantName}</p>
+                    <p className="font-medium">{selectedRequest.tenant?.name || "VACANT"}</p>
                   </div>
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-xs text-muted-foreground mb-1">Unit</p>
-                    <p className="font-medium">{selectedRequest.unitNumber}</p>
+                    <p className="font-medium">{selectedRequest.house.number}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-xs text-muted-foreground mb-1">Submitted</p>
-                    <p className="font-medium">{selectedRequest.createdAt}</p>
+                    <p className="font-medium">{format(new Date(selectedRequest.date_raised), "MMM dd, yyyy")}</p>
                   </div>
                   <div className="p-4 bg-muted rounded-lg">
                     <p className="text-xs text-muted-foreground mb-1">Status</p>
@@ -250,28 +373,21 @@ export default function Maintenance() {
                   </div>
                 </div>
 
-                {selectedRequest.assignedTo && (
-                  <div className="p-4 bg-primary/5 border border-primary/10 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Assigned Contractor</p>
-                    <p className="font-medium text-primary">{selectedRequest.assignedTo}</p>
-                  </div>
-                )}
-
                 <div className="flex gap-3 pt-4">
-                  <Button 
+                  {/* <Button 
                     variant="outline" 
                     className="flex-1"
                     onClick={() => handleNotifyLandlord(selectedRequest)}
                   >
                     Notify Landlord
-                  </Button>
-                  <Button 
+                  </Button> */}
+                  <Button
                     className="flex-1"
                     onClick={() => {
-                      setAssignOpen(true);
+                      setEditOpen(true);
                     }}
                   >
-                    Assign Contractor
+                    Edit Status
                   </Button>
                 </div>
               </div>
@@ -280,36 +396,101 @@ export default function Maintenance() {
         </DialogContent>
       </Dialog>
 
-      {/* Assign Contractor Modal */}
-      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+      <Dialog open={addRepairOpen} onOpenChange={setAddRepairOpen}>
+        <DialogContent className='sm:max-w-[500px]'>
           <DialogHeader>
-            <DialogTitle>Assign Contractor</DialogTitle>
+            <DialogTitle>Raise Maintenance Issue</DialogTitle>
             <DialogDescription>
-              Select or add a contractor to handle this repair
+              Create Repair request
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleAssign} className="space-y-4 mt-4">
+          <form onSubmit={handleAddRepair} className='space-y-4 mt-5'>
             <div className="space-y-2">
-              <Label>Contractor</Label>
-              <Select required>
+              <Label>Property</Label>
+              <Select required value={selectedProperty || ""} onValueChange={(value) => setSelectedProperty(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select contractor" />
+                  <SelectValue placeholder="Select Property" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="kamau">Kamau Hardware & Services</SelectItem>
-                  <SelectItem value="coolair">CoolAir Kenya Ltd</SelectItem>
-                  <SelectItem value="plumber">Nairobi Plumbing Works</SelectItem>
-                  <SelectItem value="electrician">PowerFix Electricians</SelectItem>
+                  {allProperties.map((property) => (
+                    <SelectItem key={property.id} value={property.id}>{property.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
-              <Textarea id="notes" placeholder="Add any special instructions..." />
+              <Label>House</Label>
+              <Select required value={newRepair.hse_id || ""} onValueChange={(value) => setNewRepair({ ...newRepair, hse_id: value })} disabled={!selectedProperty || isLoading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Property Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {
+                    allUnits.map((unit) => (
+                      <SelectItem key={unit.id} value={unit.id}>{unit.number}</SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
             </div>
+            <div className="space-y-2">
+              <Label>Issue Title</Label>
+              <Input
+                value={newRepair.title}
+                onChange={(e) => setNewRepair({ ...newRepair, title: e.target.value })}
+                placeholder="e.g., Leaking Sink Repair"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea
+                value={newRepair.description}
+                onChange={(e) => setNewRepair({ ...newRepair, description: e.target.value })}
+                placeholder="Details about the maintenance work..."
+                className="min-h-[60px]"
+              />
+            </div>
+
             <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setAssignOpen(false)}>
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setAddRepairOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" className="flex-1">
+                Assign
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Status Modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Edit Maintenance Issue Status</DialogTitle>
+            <DialogDescription>
+              Change the status of the repair
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditStatus} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label>Repair Status</Label>
+              <Select required value={editRepair.status} onValueChange={(value) => setEditRepair({ ...editRepair, status: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Repair Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(repairStatuses).map(([Key, value]) => (
+                    <SelectItem key={Key} value={Key}>{value}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setEditOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" className="flex-1">

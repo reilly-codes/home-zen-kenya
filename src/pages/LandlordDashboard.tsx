@@ -3,7 +3,9 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { QuickActions } from '@/components/dashboard/QuickActions';
-import { dashboardStats, formatKES } from '@/lib/mock-data';
+import { dashboardStats, formatKES, monthlyRentData } from '@/lib/mock-data';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Dynamic greeting based on time
 function getGreeting() {
@@ -12,6 +14,15 @@ function getGreeting() {
   if (hour < 17) return { text: 'Good afternoon', icon: CloudSun };
   return { text: 'Good evening', icon: Moon };
 }
+
+const utilityData = [
+  { month: 'Jul', water: 45000, electricity: 82000, garbage: 15000 },
+  { month: 'Aug', water: 48000, electricity: 78000, garbage: 15000 },
+  { month: 'Sep', water: 42000, electricity: 85000, garbage: 15000 },
+  { month: 'Oct', water: 50000, electricity: 90000, garbage: 15000 },
+  { month: 'Nov', water: 47000, electricity: 88000, garbage: 15000 },
+  { month: 'Dec', water: 52000, electricity: 95000, garbage: 15000 },
+];
 
 export default function LandlordDashboard() {
   const greeting = getGreeting();
@@ -63,7 +74,56 @@ export default function LandlordDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activity - Takes 2 columns on large screens */}
         <div className="lg:col-span-2">
-          <RecentActivity />
+          <div className="grid gap-6">
+            {/* Rent Collection Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Rent Collection Overview</CardTitle>
+                <CardDescription>Monthly comparison of collected vs unpaid rent</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={monthlyRentData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis
+                        dataKey="month"
+                        className="text-muted-foreground"
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis
+                        tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
+                        className="text-muted-foreground"
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <Tooltip
+                        formatter={(value: number) => formatKES(value)}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                        }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      />
+                      <Legend />
+                      <Bar
+                        dataKey="collected"
+                        name="Collected"
+                        fill="hsl(var(--chart-1))"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="unpaid"
+                        name="Unpaid"
+                        fill="hsl(var(--chart-4))"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Quick Actions */}

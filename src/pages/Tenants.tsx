@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Users, Plus, MessageSquare, Phone, Mail, Search } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,8 @@ export default function Tenants() {
   const [vacantUnits, setVacantUnits] = useState([]);
   const [allUnits, setAllUnits] = useState([]);
   const [addTenantsOpen, setAddTenantsOpen] = useState(false);
+  const [rentInvoices, setRentInvoices] = useState([]);
+  const [maintenanceInvoices, setMaintenanceInvoices] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUnitsLoading, setIsUnitsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,9 +120,32 @@ export default function Tenants() {
       }
     }
 
+    const fetchInvoices = async () => {
+      setIsLoading(true);
+      try {
+        try {
+          const rentResponse = await api.get("/invoices/rent/all");
+          setRentInvoices(rentResponse.data);
+        } catch (err) {
+          console.error("Failed to fetch rent invoices: ", err)
+        }
+
+        try {
+          const response = await api.get("/invoices/maintenance/all");
+          setMaintenanceInvoices(response.data);
+        } catch(err) {
+          console.error("Failed to fetch maintenance invoices: ", err);
+        }
+      }
+      finally {
+        setIsLoading(false);
+      }
+    }
+
     fetchProperties();
     fetchtenants();
     fetchUnits();
+    fetchInvoices();
   }, []);
 
   useEffect(() => {
@@ -146,6 +171,27 @@ export default function Tenants() {
 
     fetchUnits();
   }, [selectedProperty]);
+
+  const tenantBalances = useMemo(() => {
+    const balances = {};
+    rentInvoices.forEach(inv => {
+      if(inv.status === "UNPAID" && inv.tenant_id && new Date(inv.date_due) > new Date()) {
+        if(!balances[inv.tenant_id]) balances[inv.tenant_id] = 0;
+
+        balances[inv.tenant_id] += Number(inv.amount || 0);
+      }
+    });
+
+    maintenanceInvoices.forEach(bill => {
+      if(bill.status !== "PAID" && bill.tenant_id) {
+        if(!balances[bill.tenant_id]) balances[bill.tenant_id] = 0;
+
+        balances[bill.tenant_id] += Number(bill.total_amount || 0);
+      }
+    });
+
+    return balances;
+  }, [rentInvoices, maintenanceInvoices]);
 
   const handleBroadcast = (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,6 +226,7 @@ export default function Tenants() {
         hse: "",
       });
       setAddTenantsOpen(false);
+      setSelectedProperty(null);
     } catch (err) {
       const errMsg = err.response?.data?.detail || "Failed to save Unit";
       setError(errMsg);
@@ -188,6 +235,8 @@ export default function Tenants() {
   };
 
   const tenant = selectedTenant ? allTenants.find(t => t.id === selectedTenant) : null;
+
+  const tenantBalance = tenant ? (tenantBalances[tenant.id] || 0) : 0;
 
   return (
     <DashboardLayout
@@ -249,6 +298,7 @@ export default function Tenants() {
           <tbody className="divide-y divide-border">
             {filteredTenants.map((tenant) => {
               const unit = allUnits.find(u => u.id === tenant.hse);
+              const currentBalance = tenantBalances[tenant.id] || 0;
               return (
                 <tr key={tenant.id} className="hover:bg-muted/30 transition-colors">
                   <td className="p-4">
@@ -272,9 +322,9 @@ export default function Tenants() {
                   <td className="p-4">
                     <span className={cn(
                       "font-medium",
-                      tenant.balance > 0 ? "text-destructive" : "text-success"
+                      currentBalance > 0 ? "text-destructive" : "text-success"
                     )}>
-                      {tenant.balance > 0 ? formatKES(tenant.balance) : 'Paid'}
+                      {currentBalance > 0 ? formatKES(currentBalance) : 'Paid'}
                     </span>
                   </td>
                   <td className="p-4">
@@ -475,9 +525,9 @@ export default function Tenants() {
                     <p className="text-sm text-muted-foreground">Current Balance</p>
                     <p className={cn(
                       "text-2xl font-bold",
-                      tenant.balance > 0 ? "text-destructive" : "text-success"
+                      tenantBalance > 0 ? "text-destructive" : "text-success"
                     )}>
-                      {tenant.balance > 0 ? formatKES(tenant.balance) : 'Paid Up'}
+                      {tenantBalance > 0 ? formatKES(tenantBalance) : formatKES(tenantBalance)}
                     </p>
                   </div>
                   <Badge variant="outline" className={statusStyles[tenant.status]}>
