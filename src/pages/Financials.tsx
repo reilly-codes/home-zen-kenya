@@ -229,7 +229,7 @@ export default function Financials() {
     e.preventDefault();
     setError(null);
     try {
-      const response = await api.post(`/invoice/generate/rent/${selectedUnit}`, newInvoiceForm);
+      const response = await api.post(`/invoices/generate/rent/${selectedUnit}`, newInvoiceForm);
       toast.success("Rent invoice generated");
       setIsGenInvoiceOpen(false);
       setRentInvoices((prev) => [response.data, ...prev]);
@@ -354,11 +354,7 @@ export default function Financials() {
         payload.invoice_id = paymentForm.link_id;
         const inv = rentInvoices.find(i => i.id === paymentForm.link_id);
         if (inv) payload.amount_expected = inv.amount;
-      } else if (paymentForm.type === 'maintenance') {
-        payload.maintenance_bill_id = paymentForm.link_id;
-        const bill = maintenanceInvoices.find(b => b.id === paymentForm.link_id);
-        if (bill) payload.amount_expected = bill.total_amount;
-      }
+      } 
       // If type is 'general', IDs remain null
 
       let response;
@@ -1256,7 +1252,7 @@ export default function Financials() {
                 <span className="font-medium text-xs">Rent Invoice</span>
               </div>
 
-              <div
+              {/* <div
                 onClick={() => !editingPayment && setPaymentForm({ ...paymentForm, type: 'maintenance', link_id: '' })}
                 className={cn(
                   "cursor-pointer rounded-lg border p-2 text-center transition-all flex flex-col items-center justify-center gap-1",
@@ -1266,7 +1262,7 @@ export default function Financials() {
               >
                 <Hammer className="h-4 w-4" />
                 <span className="font-medium text-xs">Maintenance</span>
-              </div>
+              </div> */}
             </div>
 
             {/* 2. Select Invoice/Bill (Conditional) */}
@@ -1281,7 +1277,7 @@ export default function Financials() {
                   disabled={!!editingPayment}
                 >
                   <option value="" disabled>Select an outstanding item</option>
-                  {paymentForm.type === 'rent' ? (
+                  {paymentForm.type === 'rent' && (
                     rentInvoices
                       .filter(inv => inv.status !== 'PAID') // Only show unpaid
                       .map(inv => (
@@ -1289,15 +1285,17 @@ export default function Financials() {
                           Unit {inv.house?.number} - {formatKES(inv.amount)} (Due: {format(new Date(inv.date_due), 'MMM dd')})
                         </option>
                       ))
-                  ) : (
-                    maintenanceInvoices
-                      .filter(bill => bill.payment_status !== 'PAID')
-                      .map(bill => (
-                        <option key={bill.id} value={bill.id}>
-                          {bill.title} - {formatKES(bill.total_amount || bill.amount)}
-                        </option>
-                      ))
-                  )}
+                  ) 
+                  // : (
+                  //   maintenanceInvoices
+                  //     .filter(bill => bill.payment_status !== 'PAID')
+                  //     .map(bill => (
+                  //       <option key={bill.id} value={bill.id}>
+                  //         {bill.title} - {formatKES(bill.total_amount || bill.amount)}
+                  //       </option>
+                  //     ))
+                  // )
+                  }
                 </select>
               </div>
             )}
