@@ -1,4 +1,3 @@
-// components/forms/UnitForm.tsx
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,11 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { houseService, House, SaveHouseDTO } from '@/services/house.service';
 
-interface UnitFormProps {
+interface HouseFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   propertyId: string;
-  propertyName: string;          // for the dialog title
+  propertyName: string;          
   initialData?: House | null;    // present = edit mode, absent = create mode
   onSuccess: (house: House, isEdit: boolean) => void;
 }
@@ -29,12 +28,11 @@ export function HouseForm({
   propertyName,
   initialData,
   onSuccess,
-}: UnitFormProps) {
+}: HouseFormProps) {
   const [form, setForm] = useState<SaveHouseDTO>(emptyForm);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // When initialData changes (switching between create/edit), update the form
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -46,7 +44,7 @@ export function HouseForm({
     } else {
       setForm(emptyForm);
     }
-  }, [initialData, open]); // also reset when dialog opens/closes
+  }, [initialData, open]); 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;

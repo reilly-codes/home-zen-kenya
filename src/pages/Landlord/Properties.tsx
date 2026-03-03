@@ -1,4 +1,3 @@
-// pages/landlord/Properties.tsx
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -7,13 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatKES } from '@/lib/mock-data';
 import { toast } from 'sonner';
-import { useProperties } from '@/hooks/useProperties';
-import { useHouses } from '@/hooks/useHouses';
 import { Property } from '@/services/property.service';
 import { House } from '@/services/house.service';
+import { useProperties } from '@/hooks/useProperties';
+import { useHouses } from '@/hooks/useHouses';
 import { PropertyForm } from '@/components/forms/PropertyForm';
 import { HouseForm } from '@/components/forms/HouseForm';
-import { HouseDetailDialog } from '@/components/forms/HouseDetailDialog';
+import { HouseDetailDialog } from '@/components/dialogs/HouseDetailDialog';
 
 const statusStyles: Record<string, string> = {
   occupied: 'bg-success/10 text-success border-success/20',
@@ -22,23 +21,17 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function Properties() {
-  // --- Data hooks ---
   const { properties, isLoading, addProperty } = useProperties();
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const { houses, isLoading: isHousesLoading, addHouse, updateHouse } = useHouses(
     selectedProperty?.id ?? null
   );
 
-  // --- Dialog open/close state ---
-  // The page only tracks WHICH dialogs are open, not form data
   const [propertyFormOpen, setPropertyFormOpen] = useState(false);
   const [unitFormOpen, setUnitFormOpen] = useState(false);
   const [unitDetailOpen, setUnitDetailOpen] = useState(false);
 
-  // --- Selected unit for view/edit ---
   const [selectedUnit, setSelectedUnit] = useState<House | null>(null);
-
-  // --- Handlers — called by forms via onSuccess/onEdit callbacks ---
 
   const handlePropertyCreated = (newProperty: Property) => {
     addProperty(newProperty);
@@ -61,7 +54,7 @@ export default function Properties() {
   };
 
   const handleOpenCreateUnit = () => {
-    setSelectedUnit(null); // no initialData = create mode
+    setSelectedUnit(null); 
     setUnitFormOpen(true);
   };
 
@@ -108,7 +101,7 @@ export default function Properties() {
         ))}
       </div>
 
-      {/* Units Section — only shown when a property is selected */}
+      {/* Units Section  */}
       {selectedProperty && (
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
@@ -174,7 +167,7 @@ export default function Properties() {
             </div>
           )}
 
-          {/* Mobile Card View — fixed unit.unitNumber bug → unit.number */}
+          {/* Mobile Card View */}
           {!isHousesLoading && (
             <div className="md:hidden space-y-3">
               {houses.map((unit) => (
@@ -202,8 +195,6 @@ export default function Properties() {
           )}
         </div>
       )}
-
-      {/* --- Dialogs — declared once at the bottom, cleanly separated --- */}
 
       <PropertyForm
         open={propertyFormOpen}
