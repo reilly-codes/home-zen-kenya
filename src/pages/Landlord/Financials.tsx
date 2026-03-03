@@ -80,11 +80,13 @@ export default function Financials() {
   const [paymentForm, setPaymentForm] = useState({
     type: 'general', // Default to general
     link_id: '',
+    tenant_id: "",
     amount_paid: 0,
     transaction_ref: '',
     status: 'UNVERIFIED'
   });
 
+  const [tenants, setTenants] = useState([]);
   const [properties, setProperties] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
   const [allUnits, setAllUnits] = useState([]);
@@ -106,6 +108,19 @@ export default function Financials() {
 
   // --- INITIAL DATA FETCHING ---
   useEffect(() => {
+    const fetchTenants = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.get("/tenants/all");
+        setTenants(response.data);
+      } catch (error) {
+        setError("Could not fetch tenants");
+        console.error("Could not get tenants: ", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     const fetchProperties = async () => {
       try {
         const response = await api.get("/properties/all");
@@ -153,6 +168,7 @@ export default function Financials() {
       }
     };
 
+    fetchTenants();
     fetchProperties();
     fetchFinancialData();
     fetchTranscations();
@@ -312,6 +328,7 @@ export default function Financials() {
       type: 'general', // Default to general for quick entry
       link_id: '',
       amount_paid: 0,
+      tenant_id: "",
       transaction_ref: '',
       status: 'UNVERIFIED'
     });
@@ -332,6 +349,7 @@ export default function Financials() {
       type: type,
       link_id: linkId,
       amount_paid: payment.amount_paid,
+      tenant_id: payment.tenant_id,
       transaction_ref: payment.transaction_ref,
       status: payment.status
     });
@@ -345,6 +363,7 @@ export default function Financials() {
         amount_paid: Number(paymentForm.amount_paid),
         transaction_ref: paymentForm.transaction_ref,
         amount_expected: 0,
+        tenant_id: paymentForm.tenant_id,
         invoice_id: null,
         maintenance_bill_id: null
       };
@@ -354,7 +373,7 @@ export default function Financials() {
         payload.invoice_id = paymentForm.link_id;
         const inv = rentInvoices.find(i => i.id === paymentForm.link_id);
         if (inv) payload.amount_expected = inv.amount;
-      } 
+      }
       // If type is 'general', IDs remain null
 
       let response;
@@ -1285,18 +1304,30 @@ export default function Financials() {
                           Unit {inv.house?.number} - {formatKES(inv.amount)} (Due: {format(new Date(inv.date_due), 'MMM dd')})
                         </option>
                       ))
-                  ) 
-                  // : (
-                  //   maintenanceInvoices
-                  //     .filter(bill => bill.payment_status !== 'PAID')
-                  //     .map(bill => (
-                  //       <option key={bill.id} value={bill.id}>
-                  //         {bill.title} - {formatKES(bill.total_amount || bill.amount)}
-                  //       </option>
-                  //     ))
-                  // )
-                  }
+                  )}
                 </select>
+              </div>
+            )}
+
+            {paymentForm.type === "general" && (
+              <div className="grid">
+                <div className="space-y-2">
+                  <Label>Tenant</Label>
+                  <select
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={paymentForm.tenant_id}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, tenant_id: e.target.value })}
+                  required={paymentForm.type === 'general'}
+                  disabled={!!editingPayment}
+                >
+                  <option value="" disabled>Select Tenant</option>
+                  {tenants.map(tenant => (
+                    <option key={tenant.id} value={tenant.id}>
+                      {tenant.name}
+                    </option>
+                  ))}
+                </select>
+                </div>
               </div>
             )}
 
@@ -1320,6 +1351,8 @@ export default function Financials() {
                   required
                 />
               </div>
+              {/* div field for tenant id if payment is general */}
+
             </div>
 
             {/* 4. Status - Only show when editing! */}
