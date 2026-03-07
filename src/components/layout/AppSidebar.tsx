@@ -51,12 +51,16 @@ const tenantNavItems = [
 ];
 
 export function AppSidebar() {
-  const { user, logout } = useUser();
+  const { user, userProfile, logout } = useUser();
   const location = useLocation();
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
 
   const navItems = user.role === 1 ? landlordNavItems : tenantNavItems;
+
+  const initials = userProfile?.name
+    ? userProfile.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    : user.role === 1 ? 'LL' : 'TN';
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -116,12 +120,15 @@ export function AppSidebar() {
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-full bg-sidebar-accent flex items-center justify-center">
                 <span className="text-sm font-medium text-sidebar-foreground">
-                  {user.role === 1 ? 'LL' : 'TN'}
+                  {initials}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">
-                  {user.role === 1 ? 'Landlord' : 'Tenant'}
+                  {userProfile?.name
+                    ? `${user.role === 1 ? 'Landlord' : 'Tenant'} ${userProfile.name}`
+                    : user.role === 1 ? 'Landlord' : 'Tenant'
+                  }
                 </p>
               </div>
               <Button variant="ghost" size="icon" onClick={logout} className="text-sidebar-foreground/50 hover:text-sidebar-foreground">

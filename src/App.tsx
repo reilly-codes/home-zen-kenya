@@ -6,17 +6,18 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "./contexts/UserContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Index from "./pages/Index";
-import Properties from "./pages/Properties";
-import Tenants from "./pages/Tenants";
-import Financials from "./pages/Financials";
-import Maintenance from "./pages/Maintenance";
-import Reports from "./pages/Reports";
+import Properties from "./pages/Landlord/Properties";
+import Tenants from "./pages/Landlord/Tenants";
+import Financials from "./pages/Landlord/Financials";
+import Maintenance from "./pages/Landlord/Maintenance";
+import Reports from "./pages/Landlord/Reports";
 import Settings from "./pages/Settings";
-import TenantInvoices from "./pages/TenantInvoices";
+import TenantInvoices from "./pages/Tenant/TenantInvoices";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/invoices" element={<TenantInvoices />} />
               </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/" element={<ProtectedRoute />} />
               <Route path="*" element={<NotFound />} />
           </Routes>
       </UserProvider>

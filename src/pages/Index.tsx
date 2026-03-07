@@ -1,23 +1,12 @@
 import { useUser } from '@/contexts/UserContext';
-import { Navigate } from 'react-router-dom';
-import LandlordDashboard from './LandlordDashboard';
-import TenantDashboard from './TenantDashboard';
+import LandlordDashboard from './Landlord/LandlordDashboard';
+import TenantDashboard from './Tenant/TenantDashboard';
 
 const Index = () => {
   const { user, isLoading } = useUser();
 
-  if(isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  if(!user) {
-    return <Navigate to="/login" replace />;
-  }
-
+  // role === 1 → Landlord, anything else → Tenant
+  // ProtectedRoute guarantees user is never null here
   return Number(user.role) === 1 ? <LandlordDashboard /> : <TenantDashboard />
 };
 
