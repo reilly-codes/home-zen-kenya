@@ -8,7 +8,7 @@ interface TokenPayload {
 }
 
 export const login = async (email: string, password: string): Promise<TokenPayload> => {
-    const response = await api.post("/token", { email, password });
+    const response = await api.post("/token/", { email, password });
     const { access_token } = response.data;
     const decoded: TokenPayload = jwtDecode(access_token);
 
