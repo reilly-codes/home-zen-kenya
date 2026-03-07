@@ -37,16 +37,16 @@ export const tenantService = {
 
     getSingleTenant: async (tenant_id: string): Promise<Tenant> => {
         const response = await api.get(`/tenants/${tenant_id}`);
-        return response.data
+        return response.data;
     },
     
     create: async (property_id: string, tenant_data: CreateTenant) : Promise<Tenant> => {
         const response = await api.post(`/tenants/create/properties/${property_id}`, tenant_data);
-        return response.data
+        return response.data;
     },
 
     update: async(tenant_id: string, tenant_data: UpdateTenant) : Promise<Tenant> => {
         const response = await api.patch(`/tenants/${tenant_id}/edit`, tenant_data);
-        return response.data
+        return response.data;
     },
 }

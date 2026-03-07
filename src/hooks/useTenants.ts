@@ -13,7 +13,7 @@ export const useTenants = () => {
             try {
                 const data = await tenantService.getAllTenants();
                 setTenants(data);
-            } catch (error) {
+            } catch (err) {
                 setError("Could not fetch tenants");
             } finally {
                 setIsLoading(false);

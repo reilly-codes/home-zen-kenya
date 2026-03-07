@@ -29,10 +29,8 @@ export default function Tenants() {
     const [viewTenantOpen, setViewTenantOpen] = useState(false);
     const [broadcastOpen, setBroadcastOpen] = useState(false);
 
-    // --- Selected tenant — full object, not just id ---
     const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
 
-    // --- Search filter — UI logic, belongs in the page ---
     const [searchQuery, setSearchQuery] = useState('');
 
     const filteredTenants = tenants.filter(tenant => {
@@ -53,7 +51,6 @@ export default function Tenants() {
         return {} as Record<string, number>;
     }, []);
 
-    // --- Handlers ---
     const handleTenantCreated = (newTenant: Tenant) => {
         addTenant(newTenant);
     };

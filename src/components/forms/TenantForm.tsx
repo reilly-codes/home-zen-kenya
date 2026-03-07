@@ -74,7 +74,7 @@ export function TenantForm({
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
