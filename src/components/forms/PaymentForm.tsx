@@ -1,4 +1,3 @@
-// components/forms/PaymentForm.tsx
 import { useState, useEffect } from "react";
 import {
     Dialog, DialogContent, DialogDescription,

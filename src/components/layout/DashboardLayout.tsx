@@ -11,7 +11,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, title, description }: DashboardLayoutProps) {
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
 
   return (
     <SidebarProvider>
@@ -34,7 +34,10 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                {user.role === 1 ? 'Landlord View' : 'Tenant View'}
+                {user.role === 1
+                  ? `Landlord${userProfile?.name ? ` · ${userProfile.name}` : ''}`
+                  : `Tenant${userProfile?.name ? ` · ${userProfile.name}` : ''}`
+                }
               </span>
             </div>
           </header>

@@ -1,4 +1,3 @@
-// hooks/usePayments.ts
 import { useState, useEffect } from "react";
 import { paymentService, Payment } from "@/services/payment.service";
 
@@ -25,7 +24,6 @@ export const usePayments = () => {
     }, []);
 
     const addPayment = (newPayment: Payment) => {
-        // Newest first — most recent payment should appear at top
         setPayments(prev => [newPayment, ...prev]);
     };
 

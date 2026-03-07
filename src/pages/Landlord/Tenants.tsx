@@ -13,6 +13,7 @@ import { Tenant } from '@/services/tenant.service';
 import { TenantForm } from '@/components/forms/TenantForm';
 import { TenantDetailDialog } from '@/components/dialogs/TenantDetailDialog';
 import { BroadcastForm } from '@/components/forms/BroadcastForm';
+import { useRentInvoices } from '@/hooks/useRentInvoices';
 
 const statusStyles: Record<string, string> = {
     active: 'bg-success/10 text-success border-success/20',
@@ -24,6 +25,7 @@ export default function Tenants() {
     const { tenants, isLoading, addTenant } = useTenants();
     const { properties } = useProperties();
     const { units: allUnits } = useAllUnits();
+    const { rentInvoices } = useRentInvoices();
 
     const [addTenantOpen, setAddTenantOpen] = useState(false);
     const [viewTenantOpen, setViewTenantOpen] = useState(false);
@@ -41,15 +43,23 @@ export default function Tenants() {
         return matchesName || matchesUnit;
     });
 
-    // --- Balance calculation — derived from invoice data ---
-    // NOTE: When you build the financials module, move rentInvoices
-    // and maintenanceInvoices into their own hooks and pass them here.
-    // For now this is a placeholder showing where the logic lives.
+    
     const tenantBalances = useMemo(() => {
-        // Will be populated once invoice hooks exist
-        // Pattern: { [tenantId]: totalOwed }
-        return {} as Record<string, number>;
-    }, []);
+        const balances: Record<string, number> = {};
+
+        rentInvoices.forEach(inv => {
+            if (
+                inv.status === "UNPAID" &&
+                inv.tenant_id &&
+                new Date(inv.date_due) > new Date()
+            ) {
+                if (!balances[inv.tenant_id]) balances[inv.tenant_id] = 0;
+                balances[inv.tenant_id] += Number(inv.amount ?? 0);
+            }
+        });
+
+        return balances;
+    }, [rentInvoices]);
 
     const handleTenantCreated = (newTenant: Tenant) => {
         addTenant(newTenant);

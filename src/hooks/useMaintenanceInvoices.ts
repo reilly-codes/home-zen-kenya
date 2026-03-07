@@ -1,4 +1,3 @@
-// hooks/useMaintenanceInvoices.ts
 import { useState, useEffect } from "react";
 import { maintenanceService, MaintenanceInvoice } from "@/services/maintenanceinvoice.service";
 
@@ -25,7 +24,6 @@ export const useMaintenanceInvoices = () => {
     }, []);
 
     const addMaintenanceInvoice = (newInvoice: MaintenanceInvoice) => {
-        // Newest first — same pattern as rent invoices
         setMaintenanceInvoices(prev => [newInvoice, ...prev]);
     };
 

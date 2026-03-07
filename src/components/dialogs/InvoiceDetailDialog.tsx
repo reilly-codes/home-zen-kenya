@@ -1,4 +1,3 @@
-// components/forms/InvoiceDetailDialog.tsx
 import {
     Dialog, DialogContent, DialogDescription,
     DialogHeader, DialogTitle, DialogFooter
@@ -54,18 +53,14 @@ export function InvoiceDetailDialog({
 
     if (!invoice) return null;
 
-    // Type narrowing helpers — safely access fields
-    // depending on whether this is a rent or maintenance invoice
     const isMaintenanceInvoice = invoiceType === 'maintenance';
     const rentInvoice = !isMaintenanceInvoice ? (invoice as Invoice) : null;
     const maintenanceInvoice = isMaintenanceInvoice ? (invoice as MaintenanceInvoice) : null;
 
-    // Look up property name from the house's property_id
     const propertyName = properties.find(
         p => p.id === invoice.house?.property_id
     )?.name ?? '—';
 
-    // Maintenance invoices can only be edited if not yet completed
     const canEditMaintenance =
         isMaintenanceInvoice &&
         maintenanceInvoice?.status !== 'COMPLETED';

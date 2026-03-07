@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -13,14 +13,22 @@ interface BroadcastFormProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tenants: Tenant[];
+    preSelectedTenantIds?: string[];
 }
 
-export function BroadcastForm({ open, onOpenChange, tenants }: BroadcastFormProps) {
-    const [sendToAll, setSendToAll] = useState(true);
-    const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
+export function BroadcastForm({ open, onOpenChange, tenants, preSelectedTenantIds=[] }: BroadcastFormProps) {
+    const [sendToAll, setSendToAll] = useState(preSelectedTenantIds.length === 0);
+    const [selectedTenants, setSelectedTenants] = useState<string[]>(preSelectedTenantIds);
     const [smsEnabled, setSmsEnabled] = useState(true);
     const [whatsappEnabled, setWhatsappEnabled] = useState(false);
     const [message, setMessage] = useState('');
+    
+    useEffect(() => {
+        if (open) {
+            setSendToAll(preSelectedTenantIds.length === 0);
+            setSelectedTenants(preSelectedTenantIds);
+        }
+    }, [open]);
 
     const handleTenantToggle = (tenantId: string, checked: boolean) => {
         if (checked) {

@@ -1,4 +1,3 @@
-// components/financials/ReconciliationTab.tsx
 import { useState, useRef } from "react";
 import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,13 +29,11 @@ export function ReconciliationTab({
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // --- Summary counts ---
     const matched = transactions.filter(t => t.status?.toLowerCase() === 'matched').length;
     const unmatched = transactions.filter(t => t.status?.toLowerCase() === 'unmatched').length;
     const duplicate = transactions.filter(t => t.status?.toLowerCase() === 'duplicate').length;
 
     const handleFileUpload = async (file: File) => {
-        // Only accept Excel and CSV files
         const validTypes = [
             'text/csv',
             'application/vnd.ms-excel',
@@ -62,15 +59,12 @@ export function ReconciliationTab({
         }
     };
 
-    // --- File input change ---
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) handleFileUpload(file);
-        // Reset input so same file can be re-uploaded if needed
         e.target.value = '';
     };
 
-    // --- Drag and drop handlers ---
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);

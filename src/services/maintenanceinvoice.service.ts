@@ -1,4 +1,3 @@
-// services/maintenance.service.ts
 import { api } from "./api";
 
 export interface MaintenanceInvoice {
@@ -29,7 +28,6 @@ export interface CreateMaintenanceInvoice {
     parts_cost: number;
 }
 
-// Only labor and parts costs are editable after creation
 export interface UpdateMaintenanceInvoice {
     labor_cost: number;
     parts_cost: number;
@@ -51,7 +49,6 @@ export const maintenanceService = {
         return response.data;
     },
 
-    // Used when repair is completed and costs are known
     update: async (
         invoice_id: string,
         data: UpdateMaintenanceInvoice

@@ -1,4 +1,3 @@
-// hooks/useRentInvoices.ts
 import { useState, useEffect } from "react";
 import { invoiceService, Invoice } from "@/services/rentinvoice.service";
 

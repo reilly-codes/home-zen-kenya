@@ -1,4 +1,3 @@
-// components/financials/PaymentsTab.tsx
 import { useState, useMemo } from "react";
 import { Plus, Wallet, FileText, Hammer, Banknote, MoreHorizontal, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,8 +39,6 @@ export function PaymentsTab({
     const [paymentFormOpen, setPaymentFormOpen] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
-    // --- Filtered to last 30 days, newest first ---
-    // Lives here not in the hook — it's display logic
     const recentPayments = useMemo(() => {
         const thirtyDaysAgo = subDays(new Date(), 30);
         return payments
@@ -69,7 +66,6 @@ export function PaymentsTab({
         }
     };
 
-    // Determine payment type label and icon for display
     const getPaymentMeta = (payment: Payment) => {
         if (payment.invoice_id) {
             return {

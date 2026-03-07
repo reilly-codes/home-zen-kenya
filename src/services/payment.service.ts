@@ -1,4 +1,3 @@
-// services/payment.service.ts
 import { api } from "./api";
 
 export interface Payment {
@@ -12,7 +11,6 @@ export interface Payment {
     created_at: Date;
 }
 
-// Recording a NEW payment — no status, backend defaults to UNVERIFIED
 export interface CreatePayment {
     tenant_id: string;
     amount_paid: number;
@@ -21,7 +19,6 @@ export interface CreatePayment {
     invoice_id: string | null;
 }
 
-// Editing an EXISTING payment — status now included for verification
 export interface UpdatePayment {
     tenant_id: string;
     amount_paid: number;

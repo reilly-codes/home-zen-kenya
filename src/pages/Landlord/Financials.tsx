@@ -1,4 +1,3 @@
-// pages/landlord/Financials.tsx
 import { useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +14,6 @@ import { ReconciliationTab } from "@/components/financials/ReconciliationTab";
 import { formatKES } from "@/lib/mock-data";
 
 export default function Financials() {
-    // --- Data hooks ---
     const { properties } = useProperties();
     const { tenants } = useTenants();
     const {
@@ -39,8 +37,6 @@ export default function Financials() {
         refreshTransactions,
     } = useTransactions();
 
-    // --- Summary calculations ---
-    // These live here not in a hook — they're display logic for the stat cards
     const stats = useMemo(() => {
         const totalCollected = payments
             .filter(p => p.status === 'VERIFIED')

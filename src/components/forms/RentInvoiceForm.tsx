@@ -1,4 +1,3 @@
-// components/forms/RentInvoiceForm.tsx
 import { useState, useEffect } from "react";
 import {
     Dialog, DialogContent, DialogDescription,
@@ -43,7 +42,6 @@ export function RentInvoiceForm({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Reset everything when dialog closes
     useEffect(() => {
         if (!open) {
             setStep(1);
@@ -55,7 +53,6 @@ export function RentInvoiceForm({
         }
     }, [open]);
 
-    // Fetch occupied units when property is selected
     useEffect(() => {
         if (!selectedProperty) return;
 
@@ -75,7 +72,6 @@ export function RentInvoiceForm({
         fetchUnits();
     }, [selectedProperty]);
 
-    // --- Utility bill handlers ---
     const handleUtilityChange = (index: number, field: 'bill_type' | 'amount', value: string | number) => {
         setUtilities(prev => prev.map((u, i) =>
             i === index ? { ...u, [field]: value } : u
@@ -87,7 +83,6 @@ export function RentInvoiceForm({
     };
 
     const removeUtilityRow = (index: number) => {
-        // Keep at least one row
         if (utilities.length === 1) return;
         setUtilities(prev => prev.filter((_, i) => i !== index));
     };
@@ -109,7 +104,6 @@ export function RentInvoiceForm({
         }
     };
 
-    // The selected unit object — used to show unit details on step 2
     const selectedUnitData = occupiedUnits.find(u => u.id === selectedUnit);
 
     return (

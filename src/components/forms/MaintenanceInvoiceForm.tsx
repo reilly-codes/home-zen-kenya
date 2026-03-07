@@ -1,4 +1,3 @@
-// components/forms/MaintenanceInvoiceForm.tsx
 import { useState, useEffect } from "react";
 import {
     Dialog, DialogContent, DialogDescription,
@@ -40,7 +39,6 @@ export function MaintenanceInvoiceForm({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Reset everything when dialog closes
     useEffect(() => {
         if (!open) {
             setStep(1);
@@ -52,8 +50,6 @@ export function MaintenanceInvoiceForm({
         }
     }, [open]);
 
-    // Fetch ALL units for the property — not just occupied
-    // Maintenance can be raised for any unit regardless of occupancy
     useEffect(() => {
         if (!selectedProperty) return;
 

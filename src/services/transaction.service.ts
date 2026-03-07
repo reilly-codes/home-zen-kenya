@@ -15,8 +15,6 @@ export const transactionService = {
         return response.data;
     },
 
-    // Bank statement upload — different content type from all other services
-    // File is sent as multipart/form-data, not JSON
     uploadStatement: async (file: File): Promise<{ count: number }> => {
         const formData = new FormData();
         formData.append('file', file);

@@ -1,4 +1,3 @@
-// components/financials/InvoicesTab.tsx
 import { useState } from "react";
 import { Plus, FileText, Hammer } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -39,20 +38,17 @@ export function InvoicesTab({
     onMaintenanceInvoiceCreated,
     onMaintenanceInvoiceUpdated,
 }: InvoicesTabProps) {
-    // --- Dialog state ---
     const [rentFormOpen, setRentFormOpen] = useState(false);
     const [maintenanceFormOpen, setMaintenanceFormOpen] = useState(false);
     const [detailOpen, setDetailOpen] = useState(false);
 
-    // --- Selected invoice for viewing ---
-    const [selectedInvoice, setSelectedInvoice] = useState
+    const [selectedInvoice, setSelectedInvoice] = useState<
         Invoice | MaintenanceInvoice | null
     >(null);
-    const [selectedInvoiceType, setSelectedInvoiceType] = useState
+    const [selectedInvoiceType, setSelectedInvoiceType] = useState<
         'rent' | 'maintenance'
     >('rent');
 
-    // --- Invoice sub-tab ---
     const [invoiceTab, setInvoiceTab] = useState<'rent' | 'maintenance'>('rent');
 
     const handleViewRentInvoice = (invoice: Invoice) => {
@@ -192,7 +188,6 @@ export function InvoicesTab({
                                         <th className="text-left p-4 font-medium text-muted-foreground">Title</th>
                                         <th className="text-left p-4 font-medium text-muted-foreground">Total Cost</th>
                                         <th className="text-left p-4 font-medium text-muted-foreground">Repair Status</th>
-                                        <th className="text-left p-4 font-medium text-muted-foreground">Payment</th>
                                         <th className="text-right p-4 font-medium text-muted-foreground">Actions</th>
                                     </tr>
                                 </thead>
@@ -220,14 +215,6 @@ export function InvoicesTab({
                                                     className={statusStyles[bill.status?.toLowerCase()] ?? ''}
                                                 >
                                                     {bill.status}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-4">
-                                                <Badge
-                                                    variant="outline"
-                                                    className={statusStyles[bill.payment_status?.toLowerCase()] ?? ''}
-                                                >
-                                                    {bill.payment_status}
                                                 </Badge>
                                             </td>
                                             <td className="p-4 text-right">

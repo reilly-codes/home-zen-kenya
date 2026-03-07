@@ -1,4 +1,3 @@
-// hooks/useTransactions.ts
 import { useState, useEffect } from "react";
 import { transactionService, Transaction } from "@/services/transaction.service";
 
@@ -24,8 +23,6 @@ export const useTransactions = () => {
         fetchTransactions();
     }, []);
 
-    // Called after a successful bank statement upload
-    // Replaces the entire list since the upload may affect many records
     const refreshTransactions = async () => {
         setIsLoading(true);
         setError(null);
