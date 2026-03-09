@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/card';
 import { useUser } from '@/contexts/UserContext';
 import { useProperties } from '@/hooks/useProperties';
+import { useAllUnits } from '@/hooks/useAllUnits';
 import { useTenants } from '@/hooks/useTenants';
 import { useRentInvoices } from '@/hooks/useRentInvoices';
 import { usePayments } from '@/hooks/usePayments';
@@ -27,6 +28,7 @@ import { BroadcastForm } from '@/components/forms/BroadcastForm';
 import { ReconciliationTab } from '@/components/financials/ReconciliationTab';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useMaintenanceRequests } from '@/hooks/useMaintenanceRequests';
+import { useReports } from '@/hooks/useReports';
 
 function getGreeting() {
     const hour = new Date().getHours();
@@ -42,11 +44,13 @@ export default function LandlordDashboard() {
     const { userProfile, isProfileLoading } = useUser();
 
     const { properties } = useProperties();
+    const { units } = useAllUnits();
     const { tenants } = useTenants();
     const { maintenanceRequests } = useMaintenanceRequests();
     const { rentInvoices, addRentInvoice } = useRentInvoices();
     const { payments, addPayment, updatePayment } = usePayments();
     const { transactions, isLoading: transactionsLoading, refreshTransactions } = useTransactions();
+    const { monthlyRentData } = useReports(rentInvoices, payments);
 
     const [tenantFormOpen, setTenantFormOpen] = useState(false);
     const [paymentFormOpen, setPaymentFormOpen] = useState(false);
@@ -65,7 +69,10 @@ export default function LandlordDashboard() {
         .filter(i => i.status === 'UNPAID').length;
 
     const repairCounter = maintenanceRequests
-    .filter(r => r.status != "COMPLETED").length;
+        .filter(r => r.status != "COMPLETED").length;
+
+    const occupiedUnits = units
+        .filter(u => u.status === "OCCUPIED").length;
 
     return (
         <DashboardLayout
@@ -91,14 +98,14 @@ export default function LandlordDashboard() {
                     value={formatKES(pendingTotalBills)}
                     subtitle={`From ${pendingInvoiceCount} invoices`}
                     icon={Clock}
-                    trend={{ value: 12, isPositive: false }}
+                // trend={{ value: 12, isPositive: false }}
                 />
                 <StatsCard
                     title="Occupancy Rate"
-                    value={`${dashboardStats.occupancyRate}%`}
-                    subtitle={`${dashboardStats.totalTenants} of ${dashboardStats.totalUnits} units`}
+                    value={`${(occupiedUnits / units.length) * 100}%`}
+                    subtitle={`${occupiedUnits} of ${units.length} units`}
                     icon={Building2}
-                    trend={{ value: 3, isPositive: true }}
+                // trend={{ value: 3, isPositive: true }}
                 />
                 <StatsCard
                     title="Open Repairs"
@@ -118,46 +125,54 @@ export default function LandlordDashboard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="h-[350px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={monthlyRentData}>
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                            className="stroke-border"
-                                        />
-                                        <XAxis
-                                            dataKey="month"
-                                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                                        />
-                                        <YAxis
-                                            tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`}
-                                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                                        />
-                                        <Tooltip
-                                            formatter={(value: number) => formatKES(value)}
-                                            contentStyle={{
-                                                backgroundColor: 'hsl(var(--card))',
-                                                border: '1px solid hsl(var(--border))',
-                                                borderRadius: '8px',
-                                            }}
-                                            labelStyle={{ color: 'hsl(var(--foreground))' }}
-                                        />
-                                        <Legend />
-                                        <Bar
-                                            dataKey="collected"
-                                            name="Collected"
-                                            fill="hsl(var(--chart-1))"
-                                            radius={[4, 4, 0, 0]}
-                                        />
-                                        <Bar
-                                            dataKey="unpaid"
-                                            name="Unpaid"
-                                            fill="hsl(var(--chart-4))"
-                                            radius={[4, 4, 0, 0]}
-                                        />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
+                            {monthlyRentData.length === 0 ? (
+                                <div className="h-[350px] flex items-center justify-center text-muted-foreground text-sm">
+                                    No invoice data yet.
+                                </div>
+                            ) : (
+                                <div className="h-[350px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={monthlyRentData}>
+                                            <CartesianGrid
+                                                strokeDasharray="3 3"
+                                                className="stroke-border"
+                                            />
+                                            <XAxis
+                                                dataKey="month"
+                                                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                            />
+                                            <YAxis
+                                                tickFormatter={(v) =>
+                                                    v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v
+                                                }
+                                                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                            />
+                                            <Tooltip
+                                                formatter={(value: number) => formatKES(value)}
+                                                contentStyle={{
+                                                    backgroundColor: 'hsl(var(--card))',
+                                                    border: '1px solid hsl(var(--border))',
+                                                    borderRadius: '8px',
+                                                }}
+                                                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                                            />
+                                            <Legend />
+                                            <Bar
+                                                dataKey="collected"
+                                                name="Collected"
+                                                fill="hsl(var(--chart-1))"
+                                                radius={[4, 4, 0, 0]}
+                                            />
+                                            <Bar
+                                                dataKey="unpaid"
+                                                name="Unpaid"
+                                                fill="hsl(var(--chart-4))"
+                                                radius={[4, 4, 0, 0]}
+                                            />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
@@ -177,7 +192,7 @@ export default function LandlordDashboard() {
                 open={tenantFormOpen}
                 onOpenChange={setTenantFormOpen}
                 properties={properties}
-                onSuccess={() => {}}
+                onSuccess={() => { }}
             />
 
             <PaymentForm
