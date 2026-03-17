@@ -33,5 +33,18 @@ export const useRentInvoices = () => {
         );
     };
 
-    return { rentInvoices, isLoading, error, addRentInvoice, updateRentInvoice };
+    const refreshInvoices = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+                const data = await invoiceService.getAll();
+                setRentInvoices(data);
+            } catch (err) {
+                setError("Could not refresh rent invoices.");
+            } finally {
+                setIsLoading(false);
+            }
+    };
+
+    return { rentInvoices, isLoading, error, addRentInvoice, updateRentInvoice, refreshInvoices };
 };

@@ -79,7 +79,7 @@ export function RentInvoiceForm({
     };
 
     const addUtilityRow = () => {
-        setUtilities(prev => [...prev, { bill_type: "", amount: 0 }]);
+        setUtilities(prev => [...prev, { bill_type: "OTHER", amount: 0 }]);
     };
 
     const removeUtilityRow = (index: number) => {

@@ -40,6 +40,22 @@ export const invoiceService = {
     update: async(invoice_id: string, invoice_data: SaveInvoice): Promise<Invoice> => {
         const response = await api.patch(`/invoices/rent/${invoice_id}/edit`, invoice_data);
         return response.data;
+    },
+
+    bulkUpload: async(propertyId: string ,file: File): Promise<{count: number}> => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await api.post("/invoices/rent/bulk/upload", formData, {
+            params: {
+                property_id: propertyId
+            },
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return response.data;
     }
 }
 
