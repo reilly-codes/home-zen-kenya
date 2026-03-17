@@ -33,6 +33,8 @@ interface InvoiceDetailDialogProps {
     invoiceType: InvoiceType;
     properties: Property[];
     onMaintenanceUpdated: (updated: MaintenanceInvoice) => void;
+    tenant?: any;
+    hse?: any;
 }
 
 export function InvoiceDetailDialog({
@@ -42,6 +44,8 @@ export function InvoiceDetailDialog({
     invoiceType,
     properties,
     onMaintenanceUpdated,
+    tenant,
+    hse,
 }: InvoiceDetailDialogProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [repairCosts, setRepairCosts] = useState({
@@ -54,12 +58,15 @@ export function InvoiceDetailDialog({
     if (!invoice) return null;
 
     const isMaintenanceInvoice = invoiceType === 'maintenance';
+
+    const propertyId = isMaintenanceInvoice
+        ? invoice.house?.property_id
+        : hse?.property_id;
+
     const rentInvoice = !isMaintenanceInvoice ? (invoice as Invoice) : null;
     const maintenanceInvoice = isMaintenanceInvoice ? (invoice as MaintenanceInvoice) : null;
 
-    const propertyName = properties.find(
-        p => p.id === invoice.house?.property_id
-    )?.name ?? '—';
+    const propertyName = properties.find(p => p.id === propertyId)?.name ?? '—';
 
     const canEditMaintenance =
         isMaintenanceInvoice &&
@@ -116,7 +123,7 @@ export function InvoiceDetailDialog({
                                 }
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                                {invoice.house?.number} • {propertyName}
+                                {hse.number} • {propertyName}
                             </p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
@@ -138,6 +145,26 @@ export function InvoiceDetailDialog({
                         </div>
                     </div>
 
+                    {!isMaintenanceInvoice && invoice?.utilities && invoice.utilities.length > 0 && (
+                        <div className="bg-muted/30 p-4 rounded-lg space-y-2 mt-4">
+                            <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                                Utility Breakdown
+                            </span>
+                            <div className="space-y-1 mt-2 text-sm">
+                                {invoice.utilities.map((utility: any) => (
+                                    <div key={utility.id} className="flex justify-between items-center">
+                                        <span className="capitalize text-muted-foreground">
+                                            {utility.bill_type.toLowerCase()}
+                                        </span>
+                                        <span className="font-medium">
+                                            {formatKES(utility.amount)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* ===== Total amount ===== */}
                     <div className="bg-muted/50 p-4 rounded-lg flex justify-between items-center">
                         <span className="font-medium">Total Amount</span>
@@ -157,7 +184,7 @@ export function InvoiceDetailDialog({
                             <div className="flex items-center gap-2">
                                 <User className="h-4 w-4 text-primary" />
                                 <span className="font-medium">
-                                    {invoice.tenant?.name ?? 'N/A'}
+                                    {tenant.name ?? 'N/A'}
                                 </span>
                             </div>
                         </div>

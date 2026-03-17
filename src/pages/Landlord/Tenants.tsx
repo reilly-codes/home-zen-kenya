@@ -38,7 +38,7 @@ export default function Tenants() {
     const filteredTenants = tenants.filter(tenant => {
         const query = searchQuery.toLowerCase();
         const matchesName = tenant.name.toLowerCase().includes(query);
-        const unit = allUnits.find(u => u.id === tenant.hse);
+        const unit = allUnits.find(u => u.id === tenant.houses[0].hse_id);
         const matchesUnit = unit?.number.toLowerCase().includes(query);
         return matchesName || matchesUnit;
     });
@@ -146,7 +146,7 @@ export default function Tenants() {
                         </thead>
                         <tbody className="divide-y divide-border">
                             {filteredTenants.map((tenant) => {
-                                const unit = allUnits.find(u => u.id === tenant.hse);
+                                const unit = allUnits.find(u => u.id === tenant.houses[0].hse_id);
                                 const property = properties.find(p => p.id === unit?.property_id);
                                 const currentBalance = tenantBalances[tenant.id] ?? 0;
 

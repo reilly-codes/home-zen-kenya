@@ -2,11 +2,15 @@ import { api } from "./api";
 
 export interface Transaction {
     id: string;
-    date: Date;
-    description: string;
+    transaction_date: Date;
     amount: number;
-    status: string;
-    reference?: string;
+    transaction_status: string;
+    transaction_reference?: string;
+}
+export interface ReconciliationResult {
+    matched: number;
+    unmatched: number;
+    duplicates: number;
 }
 
 export const transactionService = {
@@ -25,6 +29,11 @@ export const transactionService = {
             },
         });
 
+        return response.data;
+    },
+
+    runReconciliation: async () => {
+        const response = await api.post("/reconciliation/run");
         return response.data;
     },
 };

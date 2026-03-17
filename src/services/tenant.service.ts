@@ -10,7 +10,15 @@ export interface Tenant {
     status: string;
     id: string;
     wallet_balance: number;
-    created_at: Date
+    houses: [
+        {
+            tenant_id: string;
+            hse_id: string;
+            rent_begin: Date;
+            rent_end: Date;
+            id: string;
+        }
+    ]
 }
 
 export interface CreateTenant {

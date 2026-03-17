@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, FileText, Hammer } from "lucide-react";
+import { Plus, FileText, Hammer, Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +9,11 @@ import { cn } from "@/lib/utils";
 import { Invoice } from "@/services/rentinvoice.service";
 import { MaintenanceInvoice } from "@/services/maintenanceinvoice.service";
 import { Property } from "@/services/property.service";
+import { House } from "@/services/house.service";
+import { Tenant } from "@/services/tenant.service";
 import { RentInvoiceForm } from "@/components/forms/RentInvoiceForm";
 import { MaintenanceInvoiceForm } from "@/components/forms/MaintenanceInvoiceForm";
+import { BulkUploadInvoiceForm } from "@/components/forms/BulkUploadInvoiceForm";
 import { InvoiceDetailDialog } from "@/components/dialogs/InvoiceDetailDialog";
 
 const statusStyles: Record<string, string> = {
@@ -25,7 +28,10 @@ interface InvoicesTabProps {
     rentInvoices: Invoice[];
     maintenanceInvoices: MaintenanceInvoice[];
     properties: Property[];
+    units: House[];                                           
+    tenants: Tenant[];                                        
     onRentInvoiceCreated: (invoice: Invoice) => void;
+    onRentInvoicesRefreshed: () => void;                      
     onMaintenanceInvoiceCreated: (invoice: MaintenanceInvoice) => void;
     onMaintenanceInvoiceUpdated: (invoice: MaintenanceInvoice) => void;
 }
@@ -34,27 +40,32 @@ export function InvoicesTab({
     rentInvoices,
     maintenanceInvoices,
     properties,
+    units,
+    tenants,
     onRentInvoiceCreated,
+    onRentInvoicesRefreshed,
     onMaintenanceInvoiceCreated,
     onMaintenanceInvoiceUpdated,
 }: InvoicesTabProps) {
     const [rentFormOpen, setRentFormOpen] = useState(false);
     const [maintenanceFormOpen, setMaintenanceFormOpen] = useState(false);
+    const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
     const [detailOpen, setDetailOpen] = useState(false);
 
-    const [selectedInvoice, setSelectedInvoice] = useState<
-        Invoice | MaintenanceInvoice | null
-    >(null);
-    const [selectedInvoiceType, setSelectedInvoiceType] = useState<
-        'rent' | 'maintenance'
-    >('rent');
-
+    const [selectedInvoice, setSelectedInvoice] = useState<Invoice | MaintenanceInvoice | null>(null);
+    const [selectedInvoiceType, setSelectedInvoiceType] = useState<'rent' | 'maintenance'>('rent');
+    const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+    const [selectedHouse, setSelectedHouse] = useState<House | null>(null);
     const [invoiceTab, setInvoiceTab] = useState<'rent' | 'maintenance'>('rent');
 
     const handleViewRentInvoice = (invoice: Invoice) => {
         setSelectedInvoice(invoice);
         setSelectedInvoiceType('rent');
         setDetailOpen(true);
+        let house = units.find(u => u.id === invoice.tenant_unit?.hse_id);
+        setSelectedHouse(house);
+        let tenant = tenants.find(t => t.id === invoice.tenant_unit?.tenant_id);
+        setSelectedTenant(tenant);
     };
 
     const handleViewMaintenanceInvoice = (invoice: MaintenanceInvoice) => {
@@ -66,7 +77,7 @@ export function InvoicesTab({
     return (
         <div className="space-y-4">
 
-            {/* Header — generate button changes based on active sub-tab */}
+            {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h3 className="font-semibold">
@@ -79,15 +90,24 @@ export function InvoicesTab({
                         }
                     </p>
                 </div>
-                <Button
-                    onClick={() => invoiceTab === 'rent'
-                        ? setRentFormOpen(true)
-                        : setMaintenanceFormOpen(true)
-                    }
-                >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {invoiceTab === 'rent' ? 'Generate Rent Invoice' : 'Create Maintenance Bill'}
-                </Button>
+
+                <div className="flex gap-2">
+                    {invoiceTab === 'rent' && (
+                        <Button variant="outline" onClick={() => setBulkUploadOpen(true)}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Bulk Upload
+                        </Button>
+                    )}
+                    <Button
+                        onClick={() => invoiceTab === 'rent'
+                            ? setRentFormOpen(true)
+                            : setMaintenanceFormOpen(true)
+                        }
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        {invoiceTab === 'rent' ? 'Generate Invoice' : 'Create Bill'}
+                    </Button>
+                </div>
             </div>
 
             {/* Sub-tabs */}
@@ -128,15 +148,12 @@ export function InvoicesTab({
                                 </thead>
                                 <tbody className="divide-y divide-border">
                                     {rentInvoices.map(invoice => (
-                                        <tr
-                                            key={invoice.id}
-                                            className="hover:bg-muted/30 transition-colors"
-                                        >
+                                        <tr key={invoice.id} className="hover:bg-muted/30 transition-colors">
                                             <td className="p-4 font-medium">
-                                                {invoice.house?.number ?? '—'}
+                                                {units.find(u => u.id === invoice.tenant_unit?.hse_id)?.number ?? '—'}
                                             </td>
                                             <td className="p-4 text-muted-foreground">
-                                                {invoice.tenant?.name ?? '—'}
+                                                {tenants.find(t => t.id === invoice.tenant_unit?.tenant_id)?.name ?? '—'}
                                             </td>
                                             <td className="p-4 font-semibold">
                                                 {formatKES(invoice.amount)}
@@ -188,15 +205,13 @@ export function InvoicesTab({
                                         <th className="text-left p-4 font-medium text-muted-foreground">Title</th>
                                         <th className="text-left p-4 font-medium text-muted-foreground">Total Cost</th>
                                         <th className="text-left p-4 font-medium text-muted-foreground">Repair Status</th>
+                                        <th className="text-left p-4 font-medium text-muted-foreground">Payment Status</th>
                                         <th className="text-right p-4 font-medium text-muted-foreground">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
                                     {maintenanceInvoices.map(bill => (
-                                        <tr
-                                            key={bill.id}
-                                            className="hover:bg-muted/30 transition-colors"
-                                        >
+                                        <tr key={bill.id} className="hover:bg-muted/30 transition-colors">
                                             <td className="p-4 font-medium">
                                                 {bill.house?.number ?? '—'}
                                             </td>
@@ -215,6 +230,14 @@ export function InvoicesTab({
                                                     className={statusStyles[bill.status?.toLowerCase()] ?? ''}
                                                 >
                                                     {bill.status}
+                                                </Badge>
+                                            </td>
+                                            <td className="p-4">
+                                                <Badge
+                                                    variant="outline"
+                                                    className={statusStyles[bill.payment_status?.toLowerCase()] ?? ''}
+                                                >
+                                                    {bill.payment_status}
                                                 </Badge>
                                             </td>
                                             <td className="p-4 text-right">
@@ -236,6 +259,13 @@ export function InvoicesTab({
             </Tabs>
 
             {/* ===== Forms and dialogs ===== */}
+            <BulkUploadInvoiceForm
+                open={bulkUploadOpen}
+                onOpenChange={setBulkUploadOpen}
+                properties={properties}
+                onSuccess={onRentInvoicesRefreshed}
+            />
+
             <RentInvoiceForm
                 open={rentFormOpen}
                 onOpenChange={setRentFormOpen}
@@ -260,6 +290,8 @@ export function InvoicesTab({
                     onMaintenanceInvoiceUpdated(updated);
                     setDetailOpen(false);
                 }}
+                hse={selectedHouse}
+                tenant={selectedTenant}
             />
         </div>
     );

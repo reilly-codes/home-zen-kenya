@@ -8,6 +8,7 @@ import { usePayments } from "@/hooks/usePayments";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useProperties } from "@/hooks/useProperties";
 import { useTenants } from "@/hooks/useTenants";
+import { useAllUnits } from "@/hooks/useAllUnits";
 import { InvoicesTab } from "@/components/financials/InvoicesTab";
 import { PaymentsTab } from "@/components/financials/PaymentsTab";
 import { ReconciliationTab } from "@/components/financials/ReconciliationTab";
@@ -16,10 +17,12 @@ import { formatKES } from "@/lib/mock-data";
 export default function Financials() {
     const { properties } = useProperties();
     const { tenants } = useTenants();
+    const { units } = useAllUnits();
     const {
         rentInvoices,
         addRentInvoice,
         updateRentInvoice,
+        refreshInvoices,
     } = useRentInvoices();
     const {
         maintenanceInvoices,
@@ -131,7 +134,10 @@ export default function Financials() {
                             rentInvoices={rentInvoices}
                             maintenanceInvoices={maintenanceInvoices}
                             properties={properties}
+                            units={units}
+                            tenants={tenants}
                             onRentInvoiceCreated={addRentInvoice}
+                            onRentInvoicesRefreshed={refreshInvoices}
                             onMaintenanceInvoiceCreated={addMaintenanceInvoice}
                             onMaintenanceInvoiceUpdated={updateMaintenanceInvoice}
                         />
