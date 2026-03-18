@@ -13,6 +13,7 @@ import {
     transactionService
 } from "@/services/transaction.service";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 const PREVIEW_ROWS = 5;
 const UNVERIFIED_LIMIT = 15;
@@ -24,10 +25,6 @@ const statusStyles: Record<string, string> = {
     unverified: 'bg-muted text-muted-foreground border-border',
 };
 
-// ── Parse file client-side into preview rows ─────────────────────────────────
-// Reads first N lines of a CSV or the first sheet of an Excel file
-// Returns raw string rows — we're just previewing, not validating
-
 interface PreviewRow {
     [key: string]: string;
 }
@@ -38,36 +35,28 @@ const parseFilePreview = (file: File): Promise<PreviewRow[]> => {
 
         reader.onload = (e) => {
             try {
-                const text = e.target?.result as string;
-                const lines = text.trim().split('\n').filter(Boolean);
+                const data = e.target?.result;
+                const workbook = XLSX.read(data, { type: 'array' });
 
-                if (lines.length < 2) {
-                    resolve([]);
-                    return;
-                }
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
 
-                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                const rows = lines.slice(1, PREVIEW_ROWS + 1).map(line => {
-                    const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-                    const row: PreviewRow = {};
-                    headers.forEach((h, i) => {
-                        row[h] = values[i] ?? '';
-                    });
-                    return row;
+                const rows: PreviewRow[] = XLSX.utils.sheet_to_json(sheet, {
+                    defval: '',
+                    raw: false,
                 });
 
-                resolve(rows);
+                resolve(rows.slice(0, PREVIEW_ROWS));
             } catch {
-                reject(new Error("Could not parse file."));
+                reject(new Error("Could not parse file."))
             }
         };
 
         reader.onerror = () => reject(new Error("Could not read file."));
-        reader.readAsText(file);
+        reader.readAsArrayBuffer(file);
     });
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface ReconciliationTabProps {
     transactions: Transaction[];
@@ -84,19 +73,16 @@ export function ReconciliationTab({
     const [isUploading, setIsUploading] = useState(false);
     const [isReconciling, setIsReconciling] = useState(false);
 
-    // File preview state — client side only, nothing sent yet
     const [pendingFile, setPendingFile] = useState<File | null>(null);
     const [previewRows, setPreviewRows] = useState<PreviewRow[]>([]);
     const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
     const [isParsing, setIsParsing] = useState(false);
 
-    // Last reconciliation result
     const [reconcileResult, setReconcileResult] =
         useState<ReconciliationResult | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Unverified transactions — capped at 15 for display
     const unverified = transactions
         .filter(t => t.transaction_status?.toLowerCase() !== 'matched')
         .slice(0, UNVERIFIED_LIMIT);
@@ -104,7 +90,6 @@ export function ReconciliationTab({
         t => t.transaction_status?.toLowerCase() !== 'matched'
     ).length;
 
-    // ── File selected — parse preview, don't upload yet ──────────────────────
     const handleFileSelected = async (file: File) => {
         const validTypes = [
             'text/csv',
@@ -138,7 +123,6 @@ export function ReconciliationTab({
         }
     };
 
-    // ── Confirm upload — sends file to backend ────────────────────────────────
     const handleConfirmUpload = async () => {
         if (!pendingFile) return;
 
@@ -166,7 +150,6 @@ export function ReconciliationTab({
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    // ── Run reconciliation ────────────────────────────────────────────────────
     const handleRunReconciliation = async () => {
         setIsReconciling(true);
         setReconcileResult(null);
@@ -184,7 +167,6 @@ export function ReconciliationTab({
         }
     };
 
-    // ── Drag handlers ─────────────────────────────────────────────────────────
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);
