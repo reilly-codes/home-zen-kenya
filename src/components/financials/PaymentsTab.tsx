@@ -108,6 +108,7 @@ export function PaymentsTab({
                     <thead className="bg-muted/50">
                         <tr>
                             <th className="text-left p-4 font-medium text-muted-foreground">Date</th>
+                            <th className="text-left p-4 font-medium text-muted-foreground">Tenant</th>
                             <th className="text-left p-4 font-medium text-muted-foreground">Type</th>
                             <th className="text-left p-4 font-medium text-muted-foreground">Reference</th>
                             <th className="text-left p-4 font-medium text-muted-foreground">Amount</th>
@@ -128,6 +129,9 @@ export function PaymentsTab({
                                         <p className="text-xs text-muted-foreground">
                                             {format(new Date(payment.created_at), "HH:mm")}
                                         </p>
+                                    </td>
+                                    <td className="p-4">
+                                        {tenants.find(t => t.id === payment.tenant_id)?.name ?? '—'}
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">

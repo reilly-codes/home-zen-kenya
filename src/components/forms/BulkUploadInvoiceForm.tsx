@@ -12,6 +12,7 @@ import { Property } from "@/services/property.service";
 import { invoiceService } from "@/services/rentinvoice.service";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import * as XLSX from "xlsx";
 
 interface BulkUploadInvoiceFormProps {
     open: boolean;
@@ -31,28 +32,45 @@ const parseFilePreview = (file: File): Promise<PreviewRow[]> => {
         const reader = new FileReader();
 
         reader.onload = (e) => {
+            // try {
+            //     const text = e.target?.result as string;
+            //     const lines = text.trim().split('\n').filter(Boolean);
+
+            //     if (lines.length < 2) { resolve([]); return; }
+
+            //     const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            //     const rows = lines.slice(1, PREVIEW_ROWS + 1).map(line => {
+            //         const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+            //         const row: PreviewRow = {};
+            //         headers.forEach((h, i) => { row[h] = values[i] ?? ''; });
+            //         return row;
+            //     });
+
+            //     resolve(rows);
+            // } catch {
+            //     reject(new Error("Could not parse file."));
+            // }
+
             try {
-                const text = e.target?.result as string;
-                const lines = text.trim().split('\n').filter(Boolean);
+                const data = e.target?.result;
+                const workbook = XLSX.read(data, { type: 'array' });
 
-                if (lines.length < 2) { resolve([]); return; }
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
 
-                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                const rows = lines.slice(1, PREVIEW_ROWS + 1).map(line => {
-                    const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-                    const row: PreviewRow = {};
-                    headers.forEach((h, i) => { row[h] = values[i] ?? ''; });
-                    return row;
+                const rows: PreviewRow[] = XLSX.utils.sheet_to_json(sheet, {
+                    defval: '',
+                    raw: false,
                 });
 
-                resolve(rows);
+                resolve(rows.slice(0, PREVIEW_ROWS));
             } catch {
-                reject(new Error("Could not parse file."));
+                reject(new Error("Could not parse file."))
             }
         };
 
         reader.onerror = () => reject(new Error("Could not read file."));
-        reader.readAsText(file);
+        reader.readAsArrayBuffer(file);
     });
 };
 
@@ -87,7 +105,6 @@ export function BulkUploadInvoiceForm({
         }
     }, [open]);
 
-    // ── File selected → parse preview client-side, nothing sent yet ───────────
     const handleFileSelected = async (file: File) => {
         const validTypes = [
             'text/csv',
@@ -121,7 +138,6 @@ export function BulkUploadInvoiceForm({
         }
     };
 
-    // ── Confirm upload → send to backend ──────────────────────────────────────
     const handleConfirmUpload = async () => {
         if (!pendingFile || !selectedProperty) return;
 
