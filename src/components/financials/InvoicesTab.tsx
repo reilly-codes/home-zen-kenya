@@ -205,7 +205,7 @@ export function InvoicesTab({
                                         <th className="text-left p-4 font-medium text-muted-foreground">Title</th>
                                         <th className="text-left p-4 font-medium text-muted-foreground">Total Cost</th>
                                         <th className="text-left p-4 font-medium text-muted-foreground">Repair Status</th>
-                                        <th className="text-left p-4 font-medium text-muted-foreground">Payment Status</th>
+                                        {/* <th className="text-left p-4 font-medium text-muted-foreground">Payment Status</th> */}
                                         <th className="text-right p-4 font-medium text-muted-foreground">Actions</th>
                                     </tr>
                                 </thead>
@@ -222,7 +222,7 @@ export function InvoicesTab({
                                                 </p>
                                             </td>
                                             <td className="p-4 font-semibold">
-                                                {formatKES(bill.total_amount)}
+                                                {bill.status === "PENDING" && bill.total_amount === null ? "Uninvoiced" : formatKES(bill.total_amount)}
                                             </td>
                                             <td className="p-4">
                                                 <Badge
@@ -232,14 +232,14 @@ export function InvoicesTab({
                                                     {bill.status}
                                                 </Badge>
                                             </td>
-                                            <td className="p-4">
+                                            {/* <td className="p-4">
                                                 <Badge
                                                     variant="outline"
                                                     className={statusStyles[bill.payment_status?.toLowerCase()] ?? ''}
                                                 >
                                                     {bill.payment_status}
                                                 </Badge>
-                                            </td>
+                                            </td> */}
                                             <td className="p-4 text-right">
                                                 <Button
                                                     variant="ghost"
