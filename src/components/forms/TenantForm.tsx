@@ -66,6 +66,9 @@ export function TenantForm({
         setIsLoading(true);
 
         try {
+            if(form.national_id === "") {
+                form.national_id = null;
+            }
             const newTenant = await tenantService.create(selectedProperty, form);
             onSuccess(newTenant);
             onOpenChange(false);
@@ -132,7 +135,7 @@ export function TenantForm({
                                     id="tenant-tel"
                                     value={form.tel}
                                     onChange={(e) => setForm({ ...form, tel: e.target.value })}
-                                    placeholder="e.g. 0712345678"
+                                    placeholder="e.g. 712345678"
                                     required
                                 />
                             </div>
