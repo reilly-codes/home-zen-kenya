@@ -66,6 +66,8 @@ export function TenantForm({
         setIsLoading(true);
 
         try {
+            if (form.email === "") form.email = null;
+            if (form.national_id === "") form.national_id = null;
             const newTenant = await tenantService.create(selectedProperty, form);
             onSuccess(newTenant);
             onOpenChange(false);
