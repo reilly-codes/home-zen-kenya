@@ -123,7 +123,6 @@ export function TenantForm({
                                     value={form.email}
                                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                                     placeholder="e.g. jmbithi@email.com"
-                                    required
                                 />
                             </div>
                             <div className="space-y-2">
@@ -143,7 +142,6 @@ export function TenantForm({
                                     value={form.national_id}
                                     onChange={(e) => setForm({ ...form, national_id: e.target.value })}
                                     placeholder="e.g. 34526514"
-                                    required
                                 />
                             </div>
                             <div className="space-y-2">
