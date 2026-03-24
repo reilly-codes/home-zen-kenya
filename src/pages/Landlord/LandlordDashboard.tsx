@@ -102,7 +102,7 @@ export default function LandlordDashboard() {
                 />
                 <StatsCard
                     title="Occupancy Rate"
-                    value={`${(occupiedUnits / units.length) * 100}%`}
+                    value={`${((occupiedUnits / units.length) * 100).toFixed(2)}%`}
                     subtitle={`${occupiedUnits} of ${units.length} units`}
                     icon={Building2}
                 // trend={{ value: 3, isPositive: true }}

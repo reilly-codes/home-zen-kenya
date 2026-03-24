@@ -1,0 +1,23 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: mellow
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/mellow/home-zen-kenya
+            git pull
+            npm run build
+            sudo systemctl restart nginx
+
