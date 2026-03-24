@@ -133,7 +133,7 @@ export function TenantForm({
                                     id="tenant-tel"
                                     value={form.tel}
                                     onChange={(e) => setForm({ ...form, tel: e.target.value })}
-                                    placeholder="e.g. 0712345678"
+                                    placeholder="e.g. 712345678"
                                     required
                                 />
                             </div>

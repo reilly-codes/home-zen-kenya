@@ -1,73 +1,132 @@
-# Welcome to your Lovable project
+# Home Zen RMS
+---
+![Screenshot of landing login page](./public/docs/landing_login.png)
+**What is Homezen?**
+It is a property management and rent reconciliation system. It is targeted at landlords that want to keep track of their rental properties actively without having to have an agent intervene or having to physically visit the site as often.
 
-## Project info
+**What is available after phase one?**
+After completion of phase one which primarily contains the Landlord module of the application. What are the aspects available at this point:
 
-**URL**: https://rentmgt.netlify.app
+- **Authentication**
+- **Property and Unit Management**
+- **Tenant Onboarding**
+- **Billing & Invoicing**
+- **Payment recording**
+- **Payment reconciliation(with bank transactions)**
+- **Repairs tracking**
 
-## How can I edit this code?
+**What are to come in phase two**
+With an end goal in mind we are working to have full reliable system with ease of access allowing you to manage your properties. We are working on several modules that will be coming in the next application major update. This entail:
 
-There are several ways of editing your application.
+- **Messaging or broadcasting feature**
+- **Caretaker module**
+- **User Management**
+- **Landlord module improvement requests**
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Application workflow
 
-Changes made via Lovable will be committed automatically to this repo.
+### 1. Authentication
 
-**Use your preferred IDE**
+![Screenshot of landing login page](./public/docs/landing_login.png)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Enter your login details as registered by the company. If forgotten the password use the reset password button and follow the instructions given.
+On successful login you will be redirected to the Landlord Dashboard.
+![Screenshot of Landlord dashboard](./public/docs/landlord_dashboard.png)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+![Screenshot describing the parts of the landlord dashboard](./public/docs/landloard_dashboard_annotated.png)
 
-Follow these steps:
+1. **Menu** - Shows a collapsible sidebar showing the menu with important links for the landlord.
+2. **Cards** - Show a summary of the landlords collected stats eg.: *Total Revenue, Number of Units*
+3. **Reports** - Graph to show trends of total invoices paid and unpaid for every month
+4. **Quick Actions** - A shortcut for functions that will constantly used by default but will be editable in the settings coming next phase.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 2. Property & Unit Management
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+![Screenshot of Property & Housing Page](./public/docs/Property_mgt.png)
 
-# Step 3: Install the necessary dependencies.
-npm i
+- #### Adding a property
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+![Screenshot of Property & Housing Page](./public/docs/Add_property.png)
+Fill in the form that pop ups with the property details (***Property Name & Property Location***) and click add property
+![Screenshot of the add property form](./public/docs/add_property_form.png)
 
-**Edit a file directly in GitHub**
+![Screenshot when a property is selected](./public/docs/opened_property_view.png)
+The table shows all the units present in the property
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- #### Adding Unit
 
-**Use GitHub Codespaces**
+![Screenshot when a property is selected](./public/docs/add_unit.png)
+Click the button and a form that requires abit of details concerning a unit will pop up. Fill in the data and as required and the unit will be added to the units table.
+![Screenshot of the add unit form](./public/docs/add_unit_form.png)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 3. Tenant Onboarding
 
-## What technologies are used for this project?
+![Screenshot of Tenants page](./public/docs/tenants_page.png)
+Click the add tenants button to prompt the form to popup as follows
+![Screenshot of Tenants page](./public/docs/add_tenant.png)
+Fill in the fields:
+![Screenshot of add tenant form](./public/docs/add_tenant_form_stpone.png) ![Screenshot of add tenant form](./public/docs/add_tenant_form_stptwo.png)
 
-This project is built with:
+### 4. Billing & Invoicing
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+This page contains payments, invoices & transactions.
+![Screenshot of Financials Page](./public/docs/financials.png)
 
-## How can I deploy this project?
+- #### Invoices
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Contains two types of invoices:
 
-## Can I connect a custom domain to my Lovable project?
+- Rent Invoices
+- Maintenance Request
 
-Yes, you can!
+To generate invoices click the generate invoice button as indicated. If on the maintenance bill tab click Create bill.
+![Screenshot of Financials Page](./public/docs/generate_invoice.png)
+Select the property you want to work on from the dropdown list
+![](./public/docs/generate_invoice_form_stp_one.png)
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+select the unit you want generate an invoice for.
+![](./public/docs/generate_invoice_form_stp_two.png)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Add the utility fees and click generate invoice (Rent Invoice). For maintenance bills fill in the fields and click create bill
+![Rent Invoice](./public/docs/generate_invoice_form_stp_three.png) ![Maintenance Bill](./public/docs/create_maintenance_bill_financials.png)
+
+Under the actions part of the invoice tables you may view the summary of a single invoice. Where you can download it as a PDF. For maintenance bills you may also edit it if it was generated by the maintenance requests page.
+![view rent invoice](./public/docs/view_rent_invoice.png) ![view maintenance bill](./public/docs/view_maintenace_bill.png)
+
+When editing the maintenance bill you can only update the labor costs and the parts costs as shown
+![edit maintenance bill](./public/docs/edit_maintenance_bill.png)
+
+- #### Payments
+Here you record the payment slips of the tenants which can either be tied to a specific rent invoice or can just be open.
+![payments tab on financials](./public/docs/payments_tab_financials.png)
+
+To create a new payment click the record payment button and a form will pop up as shown below. Fill in the required details and click record payment to save.
+
+![open payment](./public/docs/open_payment%20form.png) ![invoice tied payments](./public/docs/invoice_tied_payment.png)
+- *Open Payment* - a payment with no restrictions and is credited to the tenant wallet on confirmation.
+- *Closed Payment* - Payment tied to invoice and has a predetermined amount expected as it is tied to an invoice.
+
+You may also edit the payment with the form below. Click edit payment on the actions panel on the payments table to access the form.
+![Edit payment](./public/docs/edit_payment.png)
+
+- #### Transactions & Reconciliation
+![reconciliation tab](./public/docs/reconciliation_tab_financials.png)
+Here you can upload your bank statement and run reconciliation to match recorded payments to the transactions in the bank to see cash in account. On this tab you may also view just a few of your non-verified transactions incase you forgot to run the reconciliation.
+Click the run reconciliation button to match bank transactions to recorded payments to balance the books
+![run reconciliation](./public/docs/run_reconciliations.png)
+
+### 5. Maintenance
+Here you raise maintenance issues without concerning yourself with the maintenance cost.
+![Maintenance request page](./public/docs/maintenance_page.png)
+You can raise a request by click the *Raise Maintenance Request* button and a form will appear as shown
+![Raise maintenance](./public/docs/raise_maintenance_request.png)
+By default it will appear on new requests panel. You can click on individual cards to view it's specifics
+![Maintenance request](./public/docs/view_maintenance_request.png)
+You can edit it's status after clicking the edit status button to keep track of every request. This will shift the requests status and the panel it appears on.
+![Edit maintenance request](./public/docs/edit_maintenance_request.png)
+
+### 6. Reports
+Here you find reports summarizing the total data on payments, invoices, utility costs and much more.
+![Reports Page](./public/docs/reports_page.png)
