@@ -40,7 +40,7 @@ export function TenantDetailDialog({
 
     if (!tenant) return null;
 
-    const unit = allUnits.find(u => u.id === tenant.hse);
+    const unit = allUnits.find(u => u.id === tenant.houses[0].hse_id);
     const property = properties.find(p => p.id === unit?.property_id);
 
     return (
@@ -73,7 +73,7 @@ export function TenantDetailDialog({
                                 <Phone className="h-5 w-5 text-muted-foreground" />
                                 <div>
                                     <p className="text-xs text-muted-foreground">Phone</p>
-                                    <p className="font-medium">{tenant.tel}</p>
+                                    <p className="font-medium">+254{tenant.tel}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">

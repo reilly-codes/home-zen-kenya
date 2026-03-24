@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatKES } from '@/lib/mock-data';
 import { usePayments } from '@/hooks/usePayments';
 import { useRentInvoices } from '@/hooks/useRentInvoices';
+import { useMaintenanceInvoices } from '@/hooks/useMaintenanceInvoices';
 import { useReports } from '@/hooks/useReports';
 
 const UTILITY_COLOURS = [
@@ -15,8 +16,9 @@ const UTILITY_COLOURS = [
 
 export default function Reports() {
   const { rentInvoices } = useRentInvoices();
+  const { maintenanceInvoices } = useMaintenanceInvoices();
   const { payments } = usePayments();
-  const { monthlyRentData, monthlyUtilityData, utilityTypes } = useReports(rentInvoices, payments);
+  const { monthlyRentData, monthlyUtilityData, utilityTypes, monthlyExpenditureData, monthlyAccounts } = useReports({ rentInvoices: rentInvoices, payments: payments, maintenanceInvoices: maintenanceInvoices });
 
 
   return (
@@ -214,6 +216,202 @@ export default function Reports() {
                               </p>
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Expenditure report */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Maintenance Expenditure Overview</CardTitle>
+            <CardDescription>
+              Monthly view on maintenance expenditure
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {monthlyExpenditureData.length === 0 ? (
+              <div className="h-[350px] flex items-center justify-center text-muted-foreground text-sm">
+                No expenditure data yet.
+              </div>
+            ) : (
+              <div className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyExpenditureData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border"
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis
+                      tickFormatter={(v) =>
+                        v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v
+                      }
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <Tooltip
+                      formatter={(value: number) => formatKES(value)}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="laborCost"
+                      name="Labor Cost"
+                      fill="hsl(var(--chart-1))"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="partsCost"
+                      name="Parts Cost"
+                      fill="hsl(var(--chart-4))"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Accounts */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Accounts graph</CardTitle>
+            <CardDescription>
+              Monthly accounts showing in and out
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {monthlyAccounts.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground text-sm">
+                No utility data yet — utility bills appear here once invoices are generated.
+              </div>
+            ) : (
+              <>
+                {/* Chart */}
+                <div className="h-[300px] mb-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={monthlyAccounts}>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="stroke-border"
+                      />
+                      <XAxis
+                        dataKey="month"
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis
+                        tickFormatter={(v) =>
+                          v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v
+                        }
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <Tooltip
+                        formatter={(value: number) => formatKES(value)}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                        }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      />
+                      <Legend />
+                      <Bar
+                        dataKey="in"
+                        name="Cash In"
+                        fill="hsl(var(--chart-1))"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="out"
+                        name="Cash Out"
+                        fill="hsl(var(--chart-4))"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left p-4 font-medium text-muted-foreground">
+                          Month
+                        </th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">
+                          In
+                        </th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">
+                          Out
+                        </th>
+                        <th className="text-left p-4 font-medium text-muted-foreground">
+                          Profit
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthlyAccounts.map((row, index) => {
+
+                        return (
+                          <tr
+                            key={row.month}
+                            className={index % 2 === 0 ? 'bg-muted/30' : ''}
+                          >
+                            <td className="p-4 font-medium">{row.month}</td>
+                            <td className="p-4 font-medium">{formatKES(row.in)}</td>
+                            <td className="p-4 font-medium">{formatKES(row.out)}</td>
+                            <td className="p-4 font-semibold">
+                              {formatKES(row.in - row.out)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile */}
+                <div className="md:hidden space-y-3">
+                  {monthlyAccounts.map((row) => {
+
+                    return (
+                      <div key={row.month} className="p-4 bg-muted/30 rounded-lg">
+                        <div className="flex justify-between mb-3">
+                          <span className="font-semibold">{row.month}</span>
+                          <span className="font-bold">Profit: <span className='font-medium'>{formatKES(row.in - row.out)}</span></span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">
+                              Cash In
+                            </p>
+                            <p className="font-medium">
+                              {formatKES(Number(row.in) || 0)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">
+                              Cash Out
+                            </p>
+                            <p className="font-medium">
+                              {formatKES(Number(row.out) || 0)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     );

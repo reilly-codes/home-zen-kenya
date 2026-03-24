@@ -4,7 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { formatKES } from '@/lib/mock-data';
+import { formatKES, units } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { useTenants } from '@/hooks/useTenants';
 import { useProperties } from '@/hooks/useProperties';
@@ -43,7 +43,7 @@ export default function Tenants() {
         return matchesName || matchesUnit;
     });
 
-    
+
     const tenantBalances = useMemo(() => {
         const balances: Record<string, number> = {};
 
@@ -139,6 +139,7 @@ export default function Tenants() {
                                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Tenant</th>
                                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Unit</th>
                                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Phone</th>
+                                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Wallet</th>
                                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Balance</th>
                                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
                                 <th className="text-right p-4 text-sm font-medium text-muted-foreground">Actions</th>
@@ -169,7 +170,8 @@ export default function Tenants() {
                                             <p className="font-medium">{unit?.number ?? '—'}</p>
                                             <p className="text-sm text-muted-foreground">{property?.name ?? '—'}</p>
                                         </td>
-                                        <td className="p-4 text-muted-foreground">{tenant.tel}</td>
+                                        <td className="p-4 text-muted-foreground">+254{tenant.tel}</td>
+                                        <td className="p-4">{formatKES(tenant.wallet_balance)}</td>
                                         <td className="p-4">
                                             <span className={cn(
                                                 "font-medium",

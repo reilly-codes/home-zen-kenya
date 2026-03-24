@@ -7,7 +7,7 @@ import {
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
-import { dashboardStats, formatKES, monthlyRentData } from '@/lib/mock-data';
+import { formatKES } from '@/lib/mock-data';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer, Legend
@@ -50,7 +50,9 @@ export default function LandlordDashboard() {
     const { rentInvoices, addRentInvoice } = useRentInvoices();
     const { payments, addPayment, updatePayment } = usePayments();
     const { transactions, isLoading: transactionsLoading, refreshTransactions } = useTransactions();
-    const { monthlyRentData } = useReports(rentInvoices, payments);
+    const { monthlyRentData } = useReports({
+        rentInvoices:rentInvoices, payments:payments
+    });
 
     const [tenantFormOpen, setTenantFormOpen] = useState(false);
     const [paymentFormOpen, setPaymentFormOpen] = useState(false);
