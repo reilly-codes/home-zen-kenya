@@ -95,7 +95,7 @@ export function InvoicesTab({
                     {invoiceTab === 'rent' && (
                         <Button variant="outline" onClick={() => setBulkUploadOpen(true)}>
                             <Upload className="mr-2 h-4 w-4" />
-                            Bulk Upload
+                            Bulk Upload Old
                         </Button>
                     )}
                     <Button

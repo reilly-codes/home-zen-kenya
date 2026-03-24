@@ -61,7 +61,7 @@ export function InvoiceDetailDialog({
 
     const propertyId = isMaintenanceInvoice
         ? invoice.house?.property_id
-        : hse?.property_id;
+        : house?.property_id;
 
     const rentInvoice = !isMaintenanceInvoice ? (invoice as Invoice) : null;
     const maintenanceInvoice = isMaintenanceInvoice ? (invoice as MaintenanceInvoice) : null;
@@ -123,7 +123,11 @@ export function InvoiceDetailDialog({
                                 }
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                                {hse.number} • {propertyName}
+                                {isMaintenanceInvoice
+                                    ? maintenanceInvoice.house?.number 
+                                    : hse.number 
+                                } • {propertyName}
+                                
                             </p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
@@ -184,7 +188,11 @@ export function InvoiceDetailDialog({
                             <div className="flex items-center gap-2">
                                 <User className="h-4 w-4 text-primary" />
                                 <span className="font-medium">
-                                    {tenant.name ?? 'N/A'}
+                                    {
+                                        isMaintenanceInvoice
+                                        ? "Landlord"
+                                        : tenant.name ?? 'N/A'
+                                    }
                                 </span>
                             </div>
                         </div>
