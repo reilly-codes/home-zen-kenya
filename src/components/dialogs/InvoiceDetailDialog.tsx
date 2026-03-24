@@ -61,7 +61,7 @@ export function InvoiceDetailDialog({
 
     const propertyId = isMaintenanceInvoice
         ? invoice.house?.property_id
-        : house?.property_id;
+        : hse?.property_id;
 
     const rentInvoice = !isMaintenanceInvoice ? (invoice as Invoice) : null;
     const maintenanceInvoice = isMaintenanceInvoice ? (invoice as MaintenanceInvoice) : null;
