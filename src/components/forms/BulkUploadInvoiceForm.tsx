@@ -233,7 +233,7 @@ export function BulkUploadInvoiceForm({
 
                 {/* ===== STEP 2 — Upload + Preview ===== */}
                 {step === 2 && (
-                    <div className="space-y-4 mt-2">
+                    <div className="space-y-4 mt-2 min-w-0">
 
                         {/* Upload zone — hidden once a file is picked */}
                         {!pendingFile && (
@@ -296,13 +296,13 @@ export function BulkUploadInvoiceForm({
 
                         {/* File preview — shown after file selected, before upload */}
                         {pendingFile && (
-                            <div className="border border-border rounded-xl overflow-hidden">
+                            <div className="border border-border rounded-xl overflow-hidden w-full min-w-0">
                                 <div className="p-4 bg-muted/30 border-b flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <FileSpreadsheet className="h-5 w-5 text-primary" />
-                                        <div>
-                                            <p className="font-medium text-sm">{pendingFile.name}</p>
-                                            <p className="text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <FileSpreadsheet className="h-5 w-5 text-primary shrink-0" />
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-sm truncate">{pendingFile.name}</p>
+                                            <p className="text-xs text-muted-foreground truncate">
                                                 {isParsing
                                                     ? "Reading file..."
                                                     : `Showing first ${previewRows.length} rows — verify before uploading`
@@ -310,7 +310,7 @@ export function BulkUploadInvoiceForm({
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 shrink-0">
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -339,7 +339,7 @@ export function BulkUploadInvoiceForm({
                                         <p className="text-sm">Reading file...</p>
                                     </div>
                                 ) : previewRows.length > 0 ? (
-                                    <div className="overflow-x-auto">
+                                    <div className="max-w-full overflow-x-auto overflow-y-auto">
                                         <table className="w-full text-sm">
                                             <thead className="bg-muted/50">
                                                 <tr>
